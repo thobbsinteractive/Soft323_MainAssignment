@@ -9,8 +9,27 @@ fire::fire(float _health,D3DXVECTOR3* _pos,
 	look = * _look;
 	scale = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 
+	health = _health;
+	speed = 100000.0f;
+
+	// get random float in [0, 1] interval
+	float f = (rand() % 10000) * 0.0001f; 
+
+	// return float in [lowBound, highBound] interval. 
+	f = f * (2.0f - 0.0f) + 0.0f; 
+
+	rotation.z = f;
+};
+
+fire::fire()
+{
+	pos   = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	rotation = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	look = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	scale = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
 	health = 100.0f;
-	speed = 4000.0f;
+	speed = 100000.0f;
 
 	// get random float in [0, 1] interval
 	float f = (rand() % 10000) * 0.0001f; 
@@ -40,9 +59,9 @@ void fire::updateHealth(float timeDelta)
 	health = health - (timeDelta * 10);
 };
 
-void fire::walk(float units)
+void fire::walk(float timeDelta)
 {
-	units = units * speed;
+	float units = timeDelta * speed;
     // Addition of speed controls means overloading the inherted function.
 	D3DXVECTOR3 newLook;
 	D3DXMATRIX RotationMatrix;

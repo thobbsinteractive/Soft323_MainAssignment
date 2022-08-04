@@ -10,13 +10,19 @@ Ship::Ship()
 	look  = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
 
 	speed = 0.0f;
-	speedMax = 5.0f;
+	speedMax = 250.0f;
 	currentSpeedSetting = 0.0f;
 	fireRate = 0.25f;
 	timeTillFire = 0.0f;
 	beingTargeted = false;
 
 	angleOfCurrentObjective = 0.0f;
+
+	gunPosition1 = D3DXVECTOR3(-90.0f, -20.0f, -70.0f);
+	gunPosition2 = D3DXVECTOR3(90.0f, -20.0f, -70.0f);
+
+	comments="";
+	jumping = false;
 }
 
 Ship::Ship(float _health,D3DXVECTOR3 _pos, 
@@ -30,7 +36,7 @@ Ship::Ship(float _health,D3DXVECTOR3 _pos,
 
 	scale = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 	speed = 0.0f;
-	speedMax = 5.0f;
+	speedMax = 250.0f;
 	currentSpeedSetting = 0.0f;
 	accelerationRate = 10.0f; // The Lower the faster
 	fireRate = 0.25f;
@@ -38,59 +44,300 @@ Ship::Ship(float _health,D3DXVECTOR3 _pos,
 	beingTargeted = false;
 
 	angleOfCurrentObjective = 0.0f;
+
+	gunPosition1 = D3DXVECTOR3(-90.0f, -20.0f, -70.0f);
+	gunPosition2 = D3DXVECTOR3(90.0f, -20.0f, -70.0f);
+
+	comments="";
+
+	jumping = false;
 };
 
 Ship::~Ship()
 {
-	for(int i = 0; i < (int)fireBalls.size(); i++)
+	for(int i =0;i < (int)fireBalls.size();i++)
+	{
+		//erase all sounds
 		fireBalls.erase(fireBalls.begin() + i);
+	}
 };
+
+void Ship::setComment(std::string newComments)
+{
+	comments = newComments;
+}
+
+std::string Ship::getComments()
+{
+	return comments;
+}
+
+void Ship::setJumping(bool value)
+{
+	jumping = value;
+}
+
+bool Ship::isJumping()
+{
+	return jumping;
+}
+
+float Ship::getMaxSpeed()
+{
+	return speedMax;
+}
+
+void Ship::setMissionCritical(bool value)
+{
+	missionCritical=value;
+}
+
+bool Ship::getMissionCritical()
+{
+	return missionCritical;
+}
+
+void Ship::getTargetMatrix(D3DXVECTOR3 at,float size,D3DXMATRIX* V)
+{
+	D3DXMATRIX RotationMatrix;
+	D3DXMATRIX Translation;
+	D3DXMATRIX Scaling;
+
+	D3DXMatrixScaling(&Scaling,size,size,size);
+	D3DXMatrixRotationYawPitchRoll(&RotationMatrix,rotation.x,rotation.y,rotation.z);
+	D3DXMatrixTranslation(&Translation, at.x,at.y,at.z);
+	
+	*V = RotationMatrix * Scaling * Translation;
+}
+
+void Ship::getRadarMatrix(D3DXVECTOR3 at,float size,D3DXMATRIX* V)
+{
+	D3DXMATRIX RotationMatrix;
+	D3DXMATRIX Translation;
+	D3DXMATRIX LocalTranslation;
+	D3DXMATRIX Scaling;
+
+	D3DXMatrixScaling(&Scaling,1.0,1.0,1.0);
+	D3DXMatrixRotationYawPitchRoll(&RotationMatrix,rotation.x,rotation.y,rotation.z);
+	D3DXMatrixTranslation(&Translation, pos.x,pos.y,pos.z);
+	D3DXMatrixTranslation(&LocalTranslation, at.x,at.y,at.z);
+	Translation = Translation * LocalTranslation;
+
+	*V = RotationMatrix * Scaling * Translation;
+}
 
 void Ship::setSpeed(float _speed)
 {
 	speed = _speed;
 }
 
-void Ship::setTargetPosition(D3DXVECTOR3 _targetpos)
+float Ship::distanceToTarget()
 {
-	targetpos = _targetpos;
+	float Dx,Dy,Dz,distance;
+
+	//euclidean distance
+	Dx = pos.x - targetPos.x;
+	Dy = pos.y - targetPos.y;
+	Dz = pos.z - targetPos.z;
+
+	distance = sqrt(Dx*Dx + Dy*Dy + Dz*Dz);
+	return distance;
 }
 
-float Ship::getAngleToRotate(float* x,float* y,float* z,Ship* object)
+float Ship::distanceToTarget(D3DXVECTOR3 position)
 {
-	/* 
-	Example:
+	float Dx,Dy,Dz,distance;
 
-	A (1,2,3)         |A| = sqrt( 1^2 + 2^2 + 3^2) = sqrt(14) = 3.7417
-	B (4,5,6)         |b| = sqrt( 4^2 + 5^2 + 6^2) = sqrt(77) = 8.7750
+	//euclidean distance
+	Dx = pos.x - position.x;
+	Dy = pos.y - position.y;
+	Dz = pos.z - position.z;
+
+	distance = sqrt(Dx*Dx + Dy*Dy + Dz*Dz);
+	return distance;
+}
+
+void Ship::getAngleToRotate(float* x,float* y)
+{
+	float Dx,Dy,Dz;
+	float bearingX;
+	float bearingY;
+
+	// Work out how much to yaw
+	Dz = pos.z - targetPos.z;
+	Dx = pos.x - targetPos.x;
+
+
+	if ((Dz == 0) && (Dx >= 0))
+	{
+		bearingX = 0;
+	}else if ((Dz == 0) && (Dx < 0))
+	{
+		bearingX = 180;
+	}else if ((Dx == 0) && (Dz > 0))
+	{
+		bearingX = 90;	
+	}else if ((Dx == 0) && (Dz < 0))
+	{
+		bearingX = 270;
+	}else
+	{
+		bearingX = atan(abs(Dx / Dz)) * 57.296;  
+	}
 	
-	^2 = squared
+	if ((Dz > 0) && (Dx > 0))
+	{
+		bearingX = 180 + bearingX;
+	}
 
-	  Cos(angle) =  Xa * Xb + Ya * Yb + Za * Zb   =  4 + 10 + 18    = 32    =  0.9746
-                        ---------------------     ---------------    -----
-                           (3.7417)*(8.7750)           32.8334       32.8334
+	if ((Dz < 0) && (Dx > 0))
+	{
+		bearingX = 360 - bearingX;
+	}
+
+	if ((Dz > 0) && (Dx < 0)) 
+	{
+		bearingX = 180 - bearingX;
+	}
+
+	bearingX = bearingX * (D3DX_PI/180); // Convert to radians
+
+
 	
-	ArcCos (.9746) = 12.9ø
-	*/
 
-	D3DXVECTOR3 vecToThing;
-	D3DXVECTOR3 objectsCurrentVecDir;
-	float dotProduct;
+	// Work out how much to pitch
+	Dz = pos.z - targetPos.z;
+	Dx = pos.y - targetPos.y;
 
-	vecToThing.x = object->getPosX() - pos.x;
-	vecToThing.y = object->getPosY() - pos.y;
-	vecToThing.z = object->getPosZ() - pos.z;
-		
-		
-		D3DXVec3Normalize(&vecToThing, &vecToThing);
+	
+	if ((Dz == 0) && (Dx >= 0))
+	{
+		bearingY = 0;
+	}else if ((Dz == 0) && (Dx < 0))
+	{
+		bearingY = 180;
+	}else if ((Dx == 0) && (Dz > 0))
+	{
+		bearingY = 90;	
+	}else if ((Dx == 0) && (Dz < 0))
+	{
+		bearingY = 270;
+	}else
+	{
+		bearingY = atan(abs(Dx / Dz)) * 57.296;  
+	}
 
-		objectsCurrentVecDir = object->getCurrentDirectionalVector();
+	if ((Dz < 0) && (Dx < 0))
+	{
+		bearingY = 360 - bearingY;
+	}
 
-		dotProduct = D3DXVec3Dot(&vecToThing, &objectsCurrentVecDir);
+	if ((Dz > 0) && (Dx < 0))
+	{
+		bearingY = 360 - bearingY;
+	}
 
-		return cos(dotProduct);
-		//if (dotProduct > cos(cullingAngle)) return TRUE; else return FALSE;
-		//}
+	if ((Dz > 0) && (Dx < 0)) 
+	{
+		//bearingY = 180 - bearingY;
+	}
+
+	bearingY = bearingY * (D3DX_PI/180); // Convert to radians
+
+	*x = bearingX;
+	*y = bearingY;
+}
+
+void Ship::getAngleToAvoid(float* x,float* y,D3DXVECTOR3 avoidTargetPos)
+{
+	float Dx,Dy,Dz;
+	float bearingX;
+	float bearingY;
+
+
+	// Work out how much to yaw
+	Dz = pos.z - avoidTargetPos.z;
+	Dx = pos.x - avoidTargetPos.x;
+
+
+	if ((Dz == 0) && (Dx >= 0))
+	{
+		bearingX = 0;
+	}else if ((Dz == 0) && (Dx < 0))
+	{
+		bearingX = 180;
+	}else if ((Dx == 0) && (Dz > 0))
+	{
+		bearingX = 90;	
+	}else if ((Dx == 0) && (Dz < 0))
+	{
+		bearingX = 270;
+	}else
+	{
+		bearingX = atan(abs(Dx / Dz)) * 57.296;  
+	}
+	
+	if ((Dz > 0) && (Dx > 0))
+	{
+		bearingX = 180 + bearingX;
+	}
+
+	if ((Dz < 0) && (Dx > 0))
+	{
+		bearingX = 360 - bearingX;
+	}
+
+	if ((Dz > 0) && (Dx < 0)) 
+	{
+		bearingX = 180 - bearingX;
+	}
+
+	bearingX = bearingX * (D3DX_PI/180); // Convert to radians
+
+
+	
+
+	// Work out how much to pitch
+	Dz = pos.z - avoidTargetPos.z;
+	Dx = pos.y - avoidTargetPos.y;
+
+	
+	if ((Dz == 0) && (Dx >= 0))
+	{
+		bearingY = 0;
+	}else if ((Dz == 0) && (Dx < 0))
+	{
+		bearingY = 180;
+	}else if ((Dx == 0) && (Dz > 0))
+	{
+		bearingY = 90;	
+	}else if ((Dx == 0) && (Dz < 0))
+	{
+		bearingY = 270;
+	}else
+	{
+		bearingY = atan(abs(Dx / Dz)) * 57.296;  
+	}
+
+	if ((Dz < 0) && (Dx < 0))
+	{
+		bearingY = 360 - bearingY;
+	}
+
+	if ((Dz > 0) && (Dx < 0))
+	{
+		bearingY = 360 - bearingY;
+	}
+
+	if ((Dz > 0) && (Dx < 0)) 
+	{
+		//bearingY = 180 - bearingY;
+	}
+
+	bearingY = bearingY * (D3DX_PI/180); // Convert to radians
+
+	*x = bearingX;
+	*y = bearingY;
 }
 
 float Ship::getAngleOfCurrentObjective()
@@ -110,13 +357,23 @@ void Ship::decreaseHealth(float amountToDecrease)
 
 void Ship::shoot()
 {
+	D3DXVECTOR3 firePosition;
+
 	if (timeTillFire <= 0.0f)
 	{
 		if (fireBalls.size() < 200)
 		{
-			fire temp(500.0f,&pos,&rotation,&look);
+			updatePositionInRelationTo(gunPosition1,rotation,&firePosition);
+			fire temp(30.0f,&firePosition,&rotation,&look);
 			fireBalls.push_back(temp);
-			playSound(0);
+
+			updatePositionInRelationTo(gunPosition2,rotation,&firePosition);
+			fire temp2(30.0f,&firePosition,&rotation,&look);
+			fireBalls.push_back(temp2);
+			
+			sound[1].stop();
+			sound[1].reset();
+			playSound(1,D3DXVECTOR3(0.0f,0.0f,0.0f));
 		}
 		timeTillFire = fireRate;
 	}
@@ -130,7 +387,7 @@ void Ship::updateFire(float timeDelta)
 		fireBalls[i].walk(timeDelta);
 		fireBalls[i].updateHealth(timeDelta);
 
-		if (fireBalls[i].getHealth() < 0.0f)
+		if (fireBalls[i].getHealth() <= 0.0f)
 		{
 			//Delete fire ball if its dead
 			fireBalls.erase(fireBalls.begin() + i);
@@ -149,12 +406,15 @@ void Ship::getFirePosition(int index, D3DXVECTOR3* firePos)
 	fireBalls[index].getPosition(&*firePos);
 }
 
+void Ship::getFireObject(int index, objectTransform* fireball)
+{
+	*fireball = (objectTransform)fireBalls[index];
+}
+
 void Ship::update(float timeDelta)
 {
 	// Maintain objects speed
-	updateBodyEuler(timeDelta);
-
-	//walk(speed * timeDelta,false);
+	walk(speed * timeDelta,false);
 	updateFire(timeDelta);
 }
 
@@ -244,18 +504,18 @@ void Ship::walk(float units,bool keypress)
 			// Ensure that the setting does not go above currentSpeedSetting
 			if(units > 0.0f)
 			{
-				if(speed + units/5 < currentSpeedSetting)
+				if(speed + units/2 < currentSpeedSetting)
 				{
-					speed = speed + units/5;
+					speed = speed + units/2;
 				}else
 				{
 					speed = currentSpeedSetting;
 				}
 			}else
 			{
-				if(speed - units/5 < currentSpeedSetting)
+				if(speed - units/2 < currentSpeedSetting)
 				{
-					speed = speed - units/5;
+					speed = speed - units/2;
 				}else
 				{
 					speed = currentSpeedSetting;
@@ -269,18 +529,18 @@ void Ship::walk(float units,bool keypress)
 			// Ensure that the setting does not go below 0.0f
 			if(units < 0.0f)
 			{
-				if(speed + units/5 > 0.0f)
+				if(speed + units/2 > 0.0f)
 				{
-					speed = speed + units/5;
+					speed = speed + units/2;
 				}else
 				{
 					speed = 0.0f;
 				}
 			}else
 			{
-				if(speed - units/5 > 0.0f)
+				if(speed - units/2 > 0.0f)
 				{
-					speed = speed - units/5;
+					speed = speed - units/2;
 				}else
 				{
 					speed = 0.0f;
@@ -319,32 +579,39 @@ void Ship::walk(float units,bool keypress)
 	{
 		pos.z = posTemp.z;
 	}
+
+	if(chaseCamera == true)
+	{
+		updateCamera();
+	}
+
+	whereShipIsGoingToBe = pos;
+	whereShipIsGoingToBe += currentVector * speed;
+
+	// update the sound position every time the object moves
+	for(int i = 0; i < sound.size(); i++)
+	{
+		sound[i].setSoundPos(pos,speed);
+	}
 }
 
-void Ship::yaw(float angle)
+void Ship::getTargetPosition(D3DXVECTOR3* _targetPos)
 {
-	//angle = angle * (speed/10.0f);
-
-	float twoPi = D3DX_PI*2;
-
-	if (angle > twoPi)
-		angle -= twoPi;         //Just to stop the rotation angle
-
-	if (angle < 0) 
-		angle += twoPi;
-
-	rotation.x = rotation.x  + angle;
+	*_targetPos = targetPos;
 }
 
-void Ship::getMatrix(D3DXMATRIX* V)
+D3DXVECTOR3 Ship::getWhereShipIsGoingToBe()
 {
-	D3DXMATRIX RotationMatrix;
-	D3DXMATRIX Translation;
-	D3DXMATRIX Scaling;
+	return whereShipIsGoingToBe;
+}
 
-	D3DXMatrixScaling(&Scaling,1.0f,1.0f,1.0f);
-	D3DXMatrixRotationYawPitchRoll(&RotationMatrix,rotation.x,rotation.y,rotation.z);
-	D3DXMatrixTranslation(&Translation, pos.x,pos.y,pos.z);
+// Includes speed
 
-	*V = RotationMatrix * Translation * Scaling;
-};
+void Ship::playSound(int soundNumber,D3DXVECTOR3 listenerPosition)
+{
+	if((int)sound.size() > 0)
+	{
+		sound[soundNumber].setSoundPos(pos,0.0f);
+		sound[soundNumber].playSound3D();
+	}
+}

@@ -15,20 +15,45 @@ cubeEnviroment::cubeEnviroment()
 }
 
 cubeEnviroment::~cubeEnviroment()
-{
-	if(_vb){_vb->Release(); _vb = 0;}
-	if(_ib){_ib->Release(); _ib = 0;}
-
+{	
+	Release<ID3DXMesh*>(pMesh);
 	for(int i = 0; i < (int)Textures.size(); i++)
 		Release<IDirect3DTexture9*>(Textures[i]);
 }
 
-void cubeEnviroment::loadTextures(IDirect3DDevice9* device)
+bool cubeEnviroment::loadMeshIntoBuffer(char sysPath[],
+										char backPath[],
+										char frontPath[],
+										char leftPath[],
+										char rightPath[],
+										char topPath[],
+										char bottomPath[],
+									IDirect3DDevice9* Device)
 {
 	// save a ptr to the device
-	localDevice = device;
-
+	localDevice = Device;
+	ID3DXBuffer* mtrlBuffer = 0;
+	DWORD numMtrls = 0;
 	
+	bool result = true;				// Initialise return result
+
+	//MessageBox(NULL, sysPath, "Meshes.exe", MB_OK);
+
+    // D3DXLoadMeshFromX
+    // Load the mesh from the specified file
+	if( FAILED( D3DXLoadMeshFromX( sysPath, 
+									D3DXMESH_MANAGED, 
+                                    localDevice,
+									&adjBuffer,
+                                    &mtrlBuffer, 
+									NULL, 
+									&numMtrls, 
+                                    &pMesh ) ) )
+    {
+		MessageBox(NULL, "Could not find Mesh", "Meshes.exe", MB_OK);
+        result = false;
+    }
+
 	material.Specular.r = 0;
 	material.Specular.g = 0;
 	material.Specular.b = 0;
@@ -47,96 +72,6 @@ void cubeEnviroment::loadTextures(IDirect3DDevice9* device)
 	material.Emissive.b= 1.0;
 	material.Emissive.a= 0;
 
-	localDevice->CreateVertexBuffer(
-		24 * sizeof(Vertex), 
-		D3DUSAGE_WRITEONLY,
-		FVF_VERTEX,
-		D3DPOOL_MANAGED,
-		&_vb,
-		0);
-
-	_vb->Lock(0, 0, (void**)&v, 0);
-
-	// build box
-
-	// fill in the front face vertex data
-	v[0] = Vertex(-1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f);
-	v[1] = Vertex(-1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f);
-	v[2] = Vertex( 1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f);
-	v[3] = Vertex( 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f);
-
-	// fill in the back face vertex data
-	
-	v[4] = Vertex(-1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f);
-	v[5] = Vertex( 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-	v[6] = Vertex( 1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
-	v[7] = Vertex(-1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
-	
-	// fill in the top face vertex data
-	
-	v[8]  = Vertex(-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f);
-	v[9]  = Vertex(-1.0f, 1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
-	v[10] = Vertex( 1.0f, 1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
-	v[11] = Vertex( 1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f);
-
-	// fill in the bottom face vertex data
-	v[12] = Vertex(-1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f);
-	v[13] = Vertex( 1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f);
-	v[14] = Vertex( 1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f);
-	v[15] = Vertex(-1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f);
-
-	// fill in the left face vertex data
-	v[16] = Vertex(-1.0f, -1.0f,  1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-	v[17] = Vertex(-1.0f,  1.0f,  1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-	v[18] = Vertex(-1.0f,  1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	v[19] = Vertex(-1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-
-	// fill in the right face vertex data
-	v[20] = Vertex( 1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-	v[21] = Vertex( 1.0f,  1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-	v[22] = Vertex( 1.0f,  1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	v[23] = Vertex( 1.0f, -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	_vb->Unlock();
-
-	localDevice->CreateIndexBuffer(
-		36 * sizeof(WORD),
-		D3DUSAGE_WRITEONLY,
-		D3DFMT_INDEX16,
-		D3DPOOL_MANAGED,
-		&_ib,
-		0);
-
-	WORD* i = 0;
-	_ib->Lock(0, 0, (void**)&i, 0);
-
-	// fill in the front face index data
-	i[0] = 2; i[1] = 1; i[2] = 0;
-	i[3] = 3; i[4] = 2; i[5] = 0;
-
-	// fill in the back face index data
-	i[6] = 6; i[7]  = 5; i[8]  = 4;
-	i[9] = 7; i[10] = 6; i[11] = 4;
-
-	// fill in the top face index data
-	i[12] = 10; i[13] =  9; i[14] = 8;
-	i[15] = 11; i[16] = 10; i[17] = 8;
-
-	// fill in the bottom face index data
-	i[18] = 14; i[19] = 13; i[20] = 12;
-	i[21] = 15; i[22] = 14; i[23] = 12;
-
-	// fill in the left face index data
-	i[24] = 18; i[25] = 17; i[26] = 16;
-	i[27] = 19; i[28] = 18; i[29] = 16;
-
-	// fill in the right face index data
-	i[30] = 22; i[31] = 21; i[32] = 20;
-	i[33] = 23; i[34] = 22; i[35] = 20;
-
-	_ib->Unlock();
-
-	// save the loaded texture
-
 	IDirect3DTexture9* top = 0;
 	IDirect3DTexture9* bottom = 0;
 	IDirect3DTexture9* back = 0;
@@ -144,23 +79,36 @@ void cubeEnviroment::loadTextures(IDirect3DDevice9* device)
 	IDirect3DTexture9* right = 0;
 	IDirect3DTexture9* left = 0;
 
-	D3DXCreateTextureFromFile(localDevice,"sky/high/spaceBoxBack.jpg",&front);
-	D3DXCreateTextureFromFile(localDevice,"sky/high/spaceBoxFront.jpg",&back);
-	D3DXCreateTextureFromFile(localDevice,"sky/high/spaceBoxLeft.jpg",&left);
-	D3DXCreateTextureFromFile(localDevice,"sky/high/spaceBoxRight.jpg",&right);
-	D3DXCreateTextureFromFile(localDevice,"sky/high/spaceBoxTop.jpg",&top);
-	D3DXCreateTextureFromFile(localDevice,"sky/high/spaceBoxBottom.jpg",&bottom);
+	D3DXCreateTextureFromFile(localDevice,backPath,&back);
+	D3DXCreateTextureFromFile(localDevice,frontPath,&front);
+	D3DXCreateTextureFromFile(localDevice,leftPath,&left);
+	D3DXCreateTextureFromFile(localDevice,rightPath,&right);
+	D3DXCreateTextureFromFile(localDevice,topPath,&top);
+	D3DXCreateTextureFromFile(localDevice,bottomPath,&bottom);
 	
 	Textures.push_back(front);
 	Textures.push_back(back);
+	Textures.push_back(right);
+	Textures.push_back(left);
 	Textures.push_back(top);
 	Textures.push_back(bottom);
-	Textures.push_back(left);
-	Textures.push_back(right);
-}
+
+    return result;
+};
 
 void cubeEnviroment::draw()
 {
+
+// Temp
+	localDevice->SetRenderState(D3DRS_LIGHTING, false);
+
+	
+	// Set the first color argument to the texture associated with this stage
+	//localDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+	// Use this texture stage's first color unmodified, as the output. 
+	//localDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+
+
 	// Clamp texture co-ordinates to get rid of horrible seam
 	localDevice->SetSamplerState( 0, D3DSAMP_ADDRESSU,  D3DTADDRESS_CLAMP );
 	localDevice->SetSamplerState( 0, D3DSAMP_ADDRESSV,  D3DTADDRESS_CLAMP );
@@ -168,19 +116,18 @@ void cubeEnviroment::draw()
 
 	int j = 0;
 	localDevice->SetMaterial(&material);
-
-	localDevice->SetStreamSource(0, _vb, 0, sizeof(Vertex));
-	localDevice->SetIndices(_ib);
-	localDevice->SetFVF(FVF_VERTEX);
 	
 	for(int i = 0; i < (int)Textures.size(); i++)
 	{
 		j = i+1;
 		localDevice->SetTexture(0,Textures[i]);
-		localDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0,0,6,6*i,2); 
+		pMesh->DrawSubset(i); 
 	}
 	
 	// Reset texture coordinates
 	localDevice->SetSamplerState( 0, D3DSAMP_ADDRESSU,  D3DTADDRESS_WRAP );
 	localDevice->SetSamplerState( 0, D3DSAMP_ADDRESSV,  D3DTADDRESS_WRAP );
+	localDevice->SetRenderState(D3DRS_LIGHTING, true);
+
+	localDevice->SetTexture(0, NULL);
 }

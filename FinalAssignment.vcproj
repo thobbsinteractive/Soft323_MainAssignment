@@ -67,9 +67,18 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="TRUE"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="TRUE"
+				OptimizeForWindowsApplication="TRUE"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				StringPooling="TRUE"
 				RuntimeLibrary="4"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="0"
+				AssemblerListingLocation="ASSEMBLY.txt"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
@@ -77,8 +86,11 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dsound.lib dxerr9.lib d3d9.lib d3dx9.lib winmm.lib dxguid.lib dinput8.lib"
+				ShowProgress="2"
 				OutputFile="$(OutDir)/FinalAssignment.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;H:\Visual Studio Projects\FinalAssignment\Release\lib&quot;;&quot;/LIBPATH:[/lib]&quot;"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -114,7 +126,13 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
+				RelativePath=".\3DSound.cpp">
+			</File>
+			<File
 				RelativePath=".\aiShip.cpp">
+			</File>
+			<File
+				RelativePath=".\animatedTexture.cpp">
 			</File>
 			<File
 				RelativePath=".\billboardSprite.cpp">
@@ -123,7 +141,16 @@
 				RelativePath=".\boundingBox.cpp">
 			</File>
 			<File
+				RelativePath=".\boundingSphere.cpp">
+			</File>
+			<File
+				RelativePath=".\briefingScreen.cpp">
+			</File>
+			<File
 				RelativePath=".\capabilities.cpp">
+			</File>
+			<File
+				RelativePath=".\capitalShip.cpp">
 			</File>
 			<File
 				RelativePath=".\cubeEnviroment.cpp">
@@ -138,10 +165,19 @@
 				RelativePath=".\dsutil.cpp">
 			</File>
 			<File
+				RelativePath=".\explosion.cpp">
+			</File>
+			<File
 				RelativePath=".\fire.cpp">
 			</File>
 			<File
 				RelativePath=".\gameInput.cpp">
+			</File>
+			<File
+				RelativePath=".\gameObjects.cpp">
+			</File>
+			<File
+				RelativePath=".\imageSequence.cpp">
 			</File>
 			<File
 				RelativePath=".\light.cpp">
@@ -150,13 +186,25 @@
 				RelativePath=".\main.cpp">
 			</File>
 			<File
-				RelativePath=".\meshObjects.cpp">
+				RelativePath=".\missionSystem.cpp">
+			</File>
+			<File
+				RelativePath=".\mp3Player.cpp">
 			</File>
 			<File
 				RelativePath=".\objectTransform.cpp">
 			</File>
 			<File
+				RelativePath=".\playerShip.cpp">
+			</File>
+			<File
+				RelativePath=".\pSystem.cpp">
+			</File>
+			<File
 				RelativePath=".\ship.cpp">
+			</File>
+			<File
+				RelativePath=".\spaceDust.cpp">
 			</File>
 			<File
 				RelativePath=".\viewObject.cpp">
@@ -167,7 +215,16 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
+				RelativePath=".\3DSound.h">
+			</File>
+			<File
 				RelativePath=".\aiShip.h">
+			</File>
+			<File
+				RelativePath=".\animatedTexture.h">
+			</File>
+			<File
+				RelativePath=".\attribute.h">
 			</File>
 			<File
 				RelativePath=".\basicColours.h">
@@ -182,7 +239,16 @@
 				RelativePath=".\boundingBox.h">
 			</File>
 			<File
+				RelativePath=".\boundingSphere.h">
+			</File>
+			<File
+				RelativePath=".\briefingScreen.h">
+			</File>
+			<File
 				RelativePath=".\capabilities.h">
+			</File>
+			<File
+				RelativePath=".\capitalShip.h">
 			</File>
 			<File
 				RelativePath=".\cubeEnviroment.h">
@@ -197,16 +263,37 @@
 				RelativePath=".\dsutil.h">
 			</File>
 			<File
+				RelativePath=".\event.h">
+			</File>
+			<File
+				RelativePath=".\explosion.h">
+			</File>
+			<File
 				RelativePath=".\fire.h">
+			</File>
+			<File
+				RelativePath=".\frustumPlane.h">
 			</File>
 			<File
 				RelativePath=".\gameInput.h">
 			</File>
 			<File
+				RelativePath=".\gameObjects.h">
+			</File>
+			<File
+				RelativePath=".\gameSettings.h">
+			</File>
+			<File
+				RelativePath=".\imageSequence.h">
+			</File>
+			<File
 				RelativePath=".\light.h">
 			</File>
 			<File
-				RelativePath=".\meshObjects.h">
+				RelativePath=".\missionSystem.h">
+			</File>
+			<File
+				RelativePath=".\mp3Player.h">
 			</File>
 			<File
 				RelativePath=".\navPoint.h">
@@ -215,7 +302,19 @@
 				RelativePath=".\objectTransform.h">
 			</File>
 			<File
+				RelativePath=".\particle.h">
+			</File>
+			<File
+				RelativePath=".\playerShip.h">
+			</File>
+			<File
+				RelativePath=".\pSystem.h">
+			</File>
+			<File
 				RelativePath=".\ship.h">
+			</File>
+			<File
+				RelativePath=".\spaceDust.h">
 			</File>
 			<File
 				RelativePath=".\userInputs.h">
@@ -229,10 +328,25 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
 			<File
-				RelativePath=".\models\high\cockpit.X">
+				RelativePath=".\models\low\cockpit.X">
+			</File>
+			<File
+				RelativePath=".\models\low\cockpitRadar.X">
+			</File>
+			<File
+				RelativePath=".\models\low\cockpitScreenLeft.X">
+			</File>
+			<File
+				RelativePath=".\models\low\cockpitScreenRight.X">
+			</File>
+			<File
+				RelativePath=".\models\med\goodfighter.X">
 			</File>
 			<File
 				RelativePath=".\models\high\goodfighter.X">
+			</File>
+			<File
+				RelativePath=".\models\low\goodfighter.X">
 			</File>
 		</Filter>
 	</Files>

@@ -12,6 +12,9 @@
 ViewObject::ViewObject()
 {
 	adjBuffer = 0;
+	
+	Light = D3DXVECTOR3(-1.0f,0.0f,1.0f);
+	pNormalMap = NULL;
 }
 
 ViewObject::~ViewObject()
@@ -91,10 +94,25 @@ bool ViewObject::loadMeshIntoBuffer(char sysPath[],
 	if(pMesh)
 	{
 		optmizeMesh();
-		computeBoundingBox();
+		computeBoundingSphere();
 	}
+
+	// Bumpmapping
+	D3DXCreateTextureFromFileA(localDevice,"models/high/normalmap.png",&pNormalMap);
     return result;
 };
+
+// For bumpmapping
+
+DWORD ViewObject::VectorToRGB(D3DXVECTOR3* NormalVector)
+{
+DWORD dwR = (DWORD)(127 * NormalVector->x + 128);
+DWORD dwG = (DWORD)(127 * NormalVector->y + 128);
+DWORD dwB = (DWORD)(127 * NormalVector->z + 128);
+
+return (DWORD)(0xff000000 + (dwR << 16) + (dwG << 8) + dwB);
+}//VectorToRGB
+
 
 void ViewObject::optmizeMesh()
 {
@@ -116,28 +134,30 @@ void ViewObject::optmizeMesh()
 	}
 };
 
-bool ViewObject::computeBoundingBox()
+bool ViewObject::computeBoundingSphere()
 {
 	HRESULT hr = 0;
 
 	BYTE* v = 0;
 	pMesh->LockVertexBuffer(0, (void**)&v);
 
-	hr = D3DXComputeBoundingBox(
+	hr = D3DXComputeBoundingSphere(
 			(D3DXVECTOR3*)v,
 			pMesh->GetNumVertices(),
 			D3DXGetFVFVertexSize(pMesh->GetFVF()),
-			&box.min,
-			&box.max);
+			&sphere.pos,
+			&sphere.radius);
+	
+	//sphere.radius = sphere.radius/2;
 
 	pMesh->UnlockVertexBuffer();
 
-	D3DXCreateBox(
+	D3DXCreateSphere(
 		localDevice,
-		box.max.x - box.min.x,
-		box.max.y - box.min.y,
-		box.max.z - box.min.z,
-		&boxMesh,
+		sphere.radius,
+		20,
+		20,
+		&sphereMesh,
 		0);
 
 	if( FAILED(hr) )
@@ -148,32 +168,162 @@ bool ViewObject::computeBoundingBox()
 
 bool ViewObject::isPointInsideBoundingBox(D3DXVECTOR3* p,D3DXVECTOR3* currentPosition)
 {
-	return box.isPointInside(p,currentPosition);
+	sphere.setPosition(*currentPosition);
+	return sphere.isPointInside(*p);
 }
 
-void ViewObject::drawObject()
+bool ViewObject::isPointIntersectingWithMesh(D3DXVECTOR3 rayObjOrigin,D3DXVECTOR3 rayObjDirection)
 {
+	BOOL hasHit;
+	float distanceToCollision;
+
+	D3DXIntersect(pMesh, &rayObjOrigin, &rayObjDirection, &hasHit, NULL, NULL, NULL, &distanceToCollision, NULL, NULL);
+
+
+	if((distanceToCollision < 1000.0f)&&(hasHit == true))
+	{
+		hasHit = true;	
+	}else
+	{
+		hasHit = false;
+	}
+
+	return hasHit;
+}
+
+ID3DXMesh* ViewObject::getMesh()
+{
+	return pMesh;
+}
+
+float  ViewObject::getBoundingRadius()
+{
+	return sphere.radius;
+}
+
+void ViewObject::drawObjectBump()
+{	
+	/*
+		/// Layer 0 
+
+		localDevice->SetTexture(0, pNormalMap);
+		localDevice->SetTextureStageState(0, D3DTSS_COLOROP,       D3DTOP_DOTPRODUCT3);
+		localDevice->SetTextureStageState(0, D3DTSS_COLORARG1,     D3DTA_TEXTURE);
+		localDevice->SetTextureStageState(0, D3DTSS_COLORARG2,     D3DTA_DIFFUSE);
+
+		/// Layer 1 
+
+		localDevice->SetTexture(1,Textures[i]);
+		localDevice->SetTextureStageState(1, D3DTSS_COLOROP,       D3DTOP_MODULATE);
+		localDevice->SetTextureStageState(1, D3DTSS_COLORARG1,     D3DTA_TEXTURE);
+		localDevice->SetTextureStageState(1, D3DTSS_COLORARG2,     D3DTA_CURRENT);
+	*/
+
+	// Set texture for the cube
+	
+	//for(int i = 0; i < (int)Mtrls.size(); i++)
+	for(int i = 0; i < (int)Textures.size(); i++)
+	{
+
+		//
+        // STAGE 0
+        //
+        // Use D3DTOP_DOTPRODUCT3 to find the dot-product of (N.L), where N is 
+        // stored in the normal map, and L is passed in as the vertex color - 
+        // D3DTA_DIFFUSE.
+        //
+		localDevice->SetMaterial(&Mtrls[i]);
+    
+		// Bump mapping
+		localDevice->SetTexture( 0, pNormalMap );
+        localDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0 );
+
+        localDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_DOTPRODUCT3 ); // Perform a Dot3 operation...
+        localDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );    // between the N (of N.L) which is stored in a normal map texture...
+        localDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );    // with the L (of N.L) which is stored in the vertex's diffuse color.
+
+        //
+        // STAGE 1
+        //
+        // Modulate the base texture by N.L calculated in STAGE 0.
+        //
+
+		// Diffuse Map
+
+        localDevice->SetTexture( 1, Textures[i] );
+        localDevice->SetTextureStageState( 1, D3DTSS_TEXCOORDINDEX, 1 );
+
+        localDevice->SetTextureStageState( 1, D3DTSS_COLOROP, D3DTOP_MODULATE ); // Modulate...
+        localDevice->SetTextureStageState( 1, D3DTSS_COLORARG1, D3DTA_TEXTURE ); // the texture for this stage with...
+        localDevice->SetTextureStageState( 1, D3DTSS_COLORARG2, D3DTA_CURRENT ); // the current argument passed down from stage 0
+
+		pMesh->DrawSubset(i);
+	}
+
+	// re-establishment of the parameters of returned
+	
+	localDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+	localDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_CURRENT);
+	localDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
+
+	localDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_MODULATE);
+	localDevice->SetTextureStageState(1, D3DTSS_COLORARG1, D3DTA_CURRENT);
+	localDevice->SetTextureStageState(1, D3DTSS_COLORARG2, D3DTA_TEXTURE);
+
+	localDevice->SetTexture(0, NULL);
+	localDevice->SetTexture(1, NULL);
+
+	//localDevice->SetTexture(3, NULL);
+
+
+};
+
+void ViewObject::drawObject()
+{	
+	
 	for(int i = 0; i < (int)Mtrls.size(); i++)
 	{
 		localDevice->SetMaterial(&Mtrls[i]);
-		localDevice->SetTexture(0,Textures[i]);
+		localDevice->SetTexture( 0,Textures[i]);
 		pMesh->DrawSubset(i);
 	}
+	localDevice->SetTexture(0, NULL);
 };
 
-void ViewObject::drawBoundingBox()
+DWORD  ViewObject::F2DW( FLOAT f ) { 
+	return *((DWORD*)&f); 
+}
+
+void ViewObject::drawObjectForRadar()
 {
-	boxMesh->DrawSubset(0);
+	for(int i = 0; i < (int)Mtrls.size(); i++)
+	{
+		pMesh->DrawSubset(i);
+	}
+
+};
+
+void ViewObject::drawBoundingSphere()
+{
+	sphereMesh->DrawSubset(0);
 };
 
 void ViewObject::cleanUP()
 {
 	// release meshes
-	Release<ID3DXMesh*>(boxMesh);
-	Release<ID3DXMesh*>(pMesh);
+	//Release<ID3DXMesh*>(sphereMesh);
+	//Release<ID3DXMesh*>(pMesh);
+
+//	sphereMesh->Release();
+	//if(pMesh)
+	//{
+	//	pMesh->Release();
+	//}
 
 	Release<ID3DXBuffer*>(adjBuffer); // done w/ buffer
 
 	for(int i = 0; i < (int)Textures.size(); i++)
 		Release<IDirect3DTexture9*>( Textures[i] );
+
+	Mtrls.clear();
 };

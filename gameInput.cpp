@@ -7,9 +7,9 @@ GameInput::GameInput()
 	mouseDevice		  = NULL; // The mouse device
 
 	// Mouse sensivity
-	mouseXSensivity = 1.0f;
-	mouseYSensivity = 1.0f;
-	mouseZSensivity = 0.2f;
+	mouseXSensivity = 0.001f;
+	mouseYSensivity = 0.001f;
+	mouseZSensivity = 0.001f;
 };
 
 GameInput::~GameInput()
@@ -49,6 +49,14 @@ bool GameInput::setup_Input(HINSTANCE* mainInstance,HWND* hwnd, UserInputs* _key
 	keysPressed->rightKey = false;
 	keysPressed->fireKey = false;
 	keysPressed->escapeKey = false;
+	keysPressed->targetEnemyKey = false;
+	keysPressed->targetFriendlyKey = false;
+	keysPressed->roleLeft = false;
+	keysPressed->roleRight = false;
+	keysPressed->mouseRole = false;
+	keysPressed->targetNearestEnemy = false;
+	keysPressed->xMouseMove = 0;
+	keysPressed->yMouseMove = 0;
 
 	if (FAILED(DirectInput8Create(*mainInstance, DIRECTINPUT_VERSION, 
 			   IID_IDirectInput8, (void**)&directInput, NULL)))
@@ -88,11 +96,12 @@ bool GameInput::setup_Input(HINSTANCE* mainInstance,HWND* hwnd, UserInputs* _key
 
 	}
 
-	if (FAILED(mouseDevice->SetCooperativeLevel(*hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE)))
-	//if (FAILED(mouseDevice->SetCooperativeLevel(*hwnd, DISCL_BACKGROUND | DISCL_EXCLUSIVE)))
+	//if (FAILED(mouseDevice->SetCooperativeLevel(*hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE)))
+	if (FAILED(mouseDevice->SetCooperativeLevel(*hwnd, DISCL_BACKGROUND | DISCL_EXCLUSIVE)))
 	{
 		
 	}
+
 	if (FAILED(mouseDevice->SetDataFormat(&c_dfDIMouse)))
 	{
 
@@ -117,6 +126,15 @@ void GameInput::checkInputs()
 	keysPressed->rightKey = false;
 	keysPressed->fireKey = false;
 	keysPressed->escapeKey = false;
+	keysPressed->targetEnemyKey = false;
+	keysPressed->targetFriendlyKey = false;
+	keysPressed->roleLeft = false;
+	keysPressed->roleRight = false;
+	keysPressed->mouseRole = false;
+	keysPressed->xMouseMove = 0.0f;
+	keysPressed->yMouseMove = 0.0f;
+	keysPressed->targetNearestEnemy = false;
+
 
 
 	// Check the keyboard status
@@ -178,6 +196,26 @@ void GameInput::checkInputs()
 		keysPressed->fireKey = true;
 	}
 
+	if (KeyDown(keystate, DIK_ESCAPE))
+	{
+		keysPressed->escapeKey = true;
+	}
+
+	if (KeyDown(keystate, DIK_E))
+	{
+		keysPressed->targetEnemyKey = true;
+	}
+
+	if (KeyDown(keystate, DIK_N))
+	{
+		keysPressed->targetNearestEnemy = true;
+	}
+
+	if (KeyDown(keystate, DIK_T))
+	{
+		keysPressed->targetFriendlyKey = true;
+	}
+
 	//Mouse overides keys
 
 	// If left mouse button is pressed
@@ -186,25 +224,55 @@ void GameInput::checkInputs()
 		keysPressed->fireKey = true;
 	}
 
+	// If right mouse button is pressed
+	if (mouse_state.rgbButtons[1] & 0x80)
+	{
+		keysPressed->targetNearestEnemy = true;
+	}
+
 	// Check for mouse movement
 	if (mouse_state.lX > mouseXSensivity)
 	{
-		keysPressed->rightKey = true;
+		if(mouse_state.lX < 2.0f)
+		{
+			keysPressed->xMouseMove = mouse_state.lX;
+		}else
+		{
+			keysPressed->xMouseMove = 2.0f;
+		}
 	}
 
-	if (mouse_state.lX < (mouseXSensivity-mouseXSensivity-mouseXSensivity))
+	if (mouse_state.lX < (-mouseXSensivity))
 	{
-		keysPressed->leftKey = true;
+		if(mouse_state.lX > -2.0f)
+		{
+			keysPressed->xMouseMove = mouse_state.lX;
+		}else
+		{
+			keysPressed->xMouseMove = -2.0f;
+		}
 	}
 
 	if (mouse_state.lY > mouseYSensivity)
 	{
-		keysPressed->downKey = true;
+		if(mouse_state.lY < 2.0f)
+		{
+			keysPressed->yMouseMove = mouse_state.lY;
+		}else
+		{
+			keysPressed->yMouseMove = 2.0f;
+		}
 	}
 
-	if (mouse_state.lY < (mouseYSensivity-mouseYSensivity-mouseYSensivity))
+	if (mouse_state.lY < (-mouseYSensivity))
 	{
-		keysPressed->upKey = true;
+		if(mouse_state.lY > -2.0f)
+		{
+			keysPressed->yMouseMove = mouse_state.lY;
+		}else
+		{
+			keysPressed->yMouseMove = -2.0f;
+		}
 	}
 
 	if (mouse_state.lZ > mouseZSensivity)

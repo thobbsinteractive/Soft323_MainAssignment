@@ -9,7 +9,20 @@ MeshObjects::MeshObjects()
 }
 MeshObjects::~MeshObjects()
 {
+	for(int i =0;i < (int)navPointsList.size();i++)
+	{
+		navPointsList.erase(navPointsList.begin() + i);
+	}
 
+	for(int i =0;i < (int)pObjectsList.size();i++)
+	{
+		pObjectsList.erase(pObjectsList.begin() + i);
+	}
+
+	for(int i =0;i < (int)pShipList.size();i++)
+	{
+		pShipList.erase(pShipList.begin() + i);
+	}
 }
 
 void MeshObjects::addPlayerShip(Ship* _playerShip)
@@ -17,10 +30,55 @@ void MeshObjects::addPlayerShip(Ship* _playerShip)
 	playerShip = _playerShip;	
 }
 
+bool MeshObjects::loadNavPoints()
+{
+	NavPoint* tempNav = new NavPoint();
+	tempNav->index = 0;
+	tempNav->location = D3DXVECTOR3(10000.0f, 0.0f,0.0f);
+	tempNav->visited = false;
+
+	navPointsList.push_back(tempNav);
+
+	NavPoint* tempNav2 = new NavPoint();
+	tempNav2->index = 1;
+	tempNav2->location = D3DXVECTOR3(10000.0f, 0.0f,10000.0f);
+	tempNav2->visited = false;
+
+	navPointsList.push_back(tempNav2);
+
+	NavPoint* tempNav3 = new NavPoint();
+	tempNav3->index = 2;
+	tempNav3->location = D3DXVECTOR3(0.0f, 0.0f,10000.0f);
+	tempNav3->visited = false;
+
+	NavPoint* tempNav4 = new NavPoint();
+	tempNav4->index = 3;
+	tempNav4->location = D3DXVECTOR3(0.0f, 0.0f,0.0f);
+	tempNav4->visited = false;
+
+	navPointsList.push_back(tempNav3);
+
+	return true;
+
+}
+
 void MeshObjects::setDevice(IDirect3DDevice9* _pDevice)
 {
 	pLocalDevice = _pDevice;
 	plasmaSprite.setupSprite(pLocalDevice,100,100,"sprites/fireBall.dds"); // setup sprites
+}
+
+void MeshObjects::drawCockpit()
+{
+	playerShip->drawMesh(0);
+
+	// Turn off light on cockpit screens
+	pLocalDevice->SetRenderState(D3DRS_LIGHTING, false);
+	playerShip->drawMesh(1);
+	playerShip->drawMesh(2);
+	playerShip->drawMesh(3);
+	pLocalDevice->SetRenderState(D3DRS_LIGHTING, true);
+
 }
 
 void MeshObjects::updateAIShips(float timeDelta)
@@ -47,36 +105,9 @@ void MeshObjects::updateAIShips(float timeDelta)
 	// Update all AI ship positions
 	for(int i = 0; i < (int)pShipList.size();i++)
 	{
-		pShipList[i]->behavior(8.0f * timeDelta);
+		pShipList[i]->manovering(timeDelta);
 	}
 
-
-}
-
-bool MeshObjects::loadNavPoints()
-{
-	NavPoint* tempNav = new NavPoint();
-	tempNav->index = 0;
-	tempNav->location = D3DXVECTOR3(0.0f, 0.0f,10000.0f);
-	tempNav->visited = false;
-
-	navPointsList.push_back(tempNav);
-
-	NavPoint* tempNav2 = new NavPoint();
-	tempNav2->index = 1;
-	tempNav2->location = D3DXVECTOR3(0.0f, 10.0f,20000.0f);
-	tempNav2->visited = false;
-
-	navPointsList.push_back(tempNav2);
-
-	NavPoint* tempNav3 = new NavPoint();
-	tempNav3->index = 2;
-	tempNav3->location = D3DXVECTOR3(0.0f, 5.0f,30000.0f);
-	tempNav3->visited = false;
-
-	navPointsList.push_back(tempNav3);
-
-	return true;
 
 }
 
@@ -162,9 +193,10 @@ void MeshObjects::drawObjects(float timeDelta)
 				pShipList[i]->drawMeshBounding();
 
 				//TEMP
-				playerShip->getPosition(&shipPosition);
-				pShipList[i]->setTargetPosition(shipPosition);
-				pShipList[i]->turn(timeDelta);
+				pShipList[i]->getPosition(&shipPosition);
+				//playerShip->setTargetPosition()
+				//pShipList[i]->setTargetPosition(shipPosition);
+				//pShipList[i]->turn(timeDelta);
 			}
 
 			// Check for collisions with player (TEMP)
@@ -175,8 +207,6 @@ void MeshObjects::drawObjects(float timeDelta)
 			}
 		//}
 	}
-	drawSprites();
-	checkFire();
 	
 	pLocalDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 }

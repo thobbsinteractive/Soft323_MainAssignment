@@ -16,6 +16,7 @@ public:
 	fire(float _health,D3DXVECTOR3* _pos, 
 			D3DXVECTOR3* _rotation, 
 			D3DXVECTOR3* _look);
+	fire();
 	~fire();
 
 	float getHealth();

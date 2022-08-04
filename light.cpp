@@ -19,7 +19,7 @@ D3DLIGHT9 Light::InitDirectionalLight(D3DXVECTOR3* direction, D3DXCOLOR* color)
 	::ZeroMemory(&light, sizeof(light));
 
 	light.Type      = D3DLIGHT_DIRECTIONAL;
-	light.Ambient   = *color * 0.4f;
+	light.Ambient   = *color * 0.2f;
 	light.Diffuse   = *color;
 	light.Specular  = *color * 0.6f;
 	light.Direction = *direction;
@@ -33,14 +33,13 @@ D3DLIGHT9 Light::InitPointLight(D3DXVECTOR3* position, D3DXCOLOR* color)
 	::ZeroMemory(&light, sizeof(light));
 
 	light.Type      = D3DLIGHT_POINT;
-	light.Ambient   = *color * 0.3f;
-	light.Diffuse   = *color * 1.0f;
-	light.Specular  = *color * 1.6f;
+	light.Ambient   = *color * 0.4f;
+	light.Diffuse   = *color;
+	light.Specular  = *color * 0.6f;
 	light.Position  = *position;
-	//light.Range        = 1000.0f;
-	light.Range        = 100000.0f;
-	light.Falloff      = 100.0f;
-	light.Attenuation0 = 0.0f;
+	light.Range        = 1000000.0f;
+	light.Falloff      = 1.0f;
+	light.Attenuation0 = 1.0f;
 	light.Attenuation1 = 0.0f;
 	light.Attenuation2 = 0.0f;
 

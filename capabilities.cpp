@@ -14,12 +14,14 @@ Capabilities::~Capabilities()
 
 bool Capabilities::getCapabilities(int* width, // [out] A pointer to the set screen width
 								   int* height, // [out] A pointer to the set screen height
+								   int* textureSize, //[out] a pointer to the max texture size supported
+								   GameSettings _userSettings, // the game settings chosen by the user
+								   HINSTANCE hInstance,
 								   HWND* hwnd,
 								   IDirect3DDevice9** device)	// [out] A pointer to a pointer of the created device)
 {
-	HWND UserConfigWindow = 0; //Handle to the config window
 
-
+	userSettings = _userSettings;
 	IDirect3D9* d3d9;
 	d3d9 = Direct3DCreate9(D3D_SDK_VERSION);
 
@@ -47,10 +49,18 @@ bool Capabilities::getCapabilities(int* width, // [out] A pointer to the set scr
 		vp = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
 	}
 
+	if(!(caps.TextureOpCaps & D3DTEXOPCAPS_DOTPRODUCT3))
+	{
+		
+	}//CheckDeviceCaps
+
+	// Get max texture size
+	*textureSize = (int)caps.MaxTextureHeight;
+
 	//temp
 
 	D3DFORMAT depth = D3DFMT_D24S8;
-	bool windowed = true;
+	bool windowed = userSettings.fullScreen;
 	D3DDEVTYPE deviceType = D3DDEVTYPE_HAL;
 
 	return initDevice(d3d9,hwnd,windowed,depth,*width,*height,vp,deviceType,device);
@@ -74,8 +84,8 @@ bool Capabilities::initDevice(IDirect3D9* d3d9,
 	// Create and fill out an instance of the D3DPRESENT_PARAMETERS 
 	// structure.
 	D3DPRESENT_PARAMETERS d3dpp;
-	d3dpp.BackBufferWidth				= width;
-	d3dpp.BackBufferHeight              = height;
+	d3dpp.BackBufferWidth				= userSettings.width;
+	d3dpp.BackBufferHeight              = userSettings.height;
 	d3dpp.BackBufferFormat              = D3DFMT_A8R8G8B8; // pixel format
 	d3dpp.BackBufferCount				= 1;
 	d3dpp.MultiSampleType				= D3DMULTISAMPLE_NONE;

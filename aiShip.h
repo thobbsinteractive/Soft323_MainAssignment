@@ -9,35 +9,53 @@ class AIShip : public Ship
 public:
 	AIShip();
 	~AIShip();
-	void behavior(float units); //units consists of timedelta * 8.0f
 	bool getIFF();
 	void setIFF(bool _friendly);
 	void setCurrentSpeedSetting(float _speed);
-	void setTargetShip(int _targetShipIndex);
+	void setTargetShip(Ship* _targetedShip);
 	bool getObjectiveStatus();
 	void addNavPoint(NavPoint newNavPoint);
 	void getNextNavPoint();
 	float getObjectiveXPos();
 	float getObjectiveYPos();
 	float getObjectiveZPos();
-	void turn(float timeDelta);
+	void manovering(float timeDelta);
+	void isLaunching(float _time);
+	void setAvoiding(bool isAvoiding,float _time,Ship* _targetedShip);
+	void setAvoiding(bool isAvoiding);
+	bool isCapital();
+	void setCapital(bool value);
+	bool getHasTarget();
+	void getAIFireMatrix(int i,D3DXMATRIX* V,D3DXVECTOR3 playerRotation);
 
-private:
+protected:
 	void avoid();
-	void manovering();
+	void turn(float timeDelta);
+	void avoidTurn(float timeDelta);
+	float turnSpeed;
 
 	bool awaitingNewObjective; // IS the ship awaitingNewObjective
 	bool friendly; // Is this ship a friendly to the player
 	bool turning;
 	bool avoiding;
 	bool manover;
+	bool capital;
+	bool hasEnemyTarget;
 
-	int targetShipIndex;
+	Ship* targetedShip;
+	Ship* avoidanceShip;
 	int currentNavPoint;
-	int totalNumberOfNavPoints;
 
 	D3DXVECTOR3 objectivePos;
+
 	std::vector<NavPoint*> navPointsList;
+	bool launching;
+	float timeToLaunchfor;
+	float time;
+
+	float timeToAvoidFor;
+
+	bool evading;
 
 };
 

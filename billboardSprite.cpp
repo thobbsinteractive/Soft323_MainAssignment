@@ -9,7 +9,7 @@
 
 billboardSprite::billboardSprite()
 {
-
+	texture=0;
 }
 
 billboardSprite::~billboardSprite()
@@ -23,10 +23,14 @@ billboardSprite::~billboardSprite()
 	{
 		_ib->Release(); _ib = 0;
 	};
-	//d3d::Release<IDirect3DTexture9>texture;
+
+	if(texture)
+	{
+		texture->Release();
+	}
 }
 
-void billboardSprite::setupSprite(IDirect3DDevice9* device,float _sizeX, float _sizeY,char texturePath[200])
+void billboardSprite::setupSprite(IDirect3DDevice9* device,float _sizeX, float _sizeY,char texturePath[])
 {
 	// save a ptr to the device
 	localDevice = device;
@@ -89,26 +93,41 @@ void billboardSprite::setupSprite(IDirect3DDevice9* device,float _sizeX, float _
 	_ib->Unlock();
 
 	// save the loaded texture
+	if(texturePath)
+	{
+		D3DXCreateTextureFromFile(localDevice,texturePath,&texture);
+	}
+}
 
-	D3DXCreateTextureFromFile(localDevice,texturePath,&texture);
+void billboardSprite::setSize(int _sizeX,int _sizeY)
+{
+	sizeX = _sizeX;
+	sizeY = _sizeY;
+
+	_vb->Lock(0, 0, (void**)&v, 0);
+
+	// resize plane
+	
+	v[0] = Vertex(-1.0f * (sizeX/2), -1.0f * (sizeY/2), 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f);
+	v[1] = Vertex( 1.0f * (sizeX/2), -1.0f * (sizeY/2), 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
+	v[2] = Vertex( 1.0f * (sizeX/2),  1.0f * (sizeY/2), 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
+	v[3] = Vertex(-1.0f * (sizeX/2),  1.0f * (sizeY/2), 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    ////////////// X /////////////// Y //////////////// Z //// nZ // nY // nZ // U /// V //
+	_vb->Unlock();
 }
 
 void billboardSprite::draw()
 {
-	// use alpha from texture
-	localDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	localDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-
-	localDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-	localDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-    localDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
 	localDevice->SetMaterial(&material);
 
 	localDevice->SetStreamSource(0, _vb, 0, sizeof(Vertex));
 	localDevice->SetIndices(_ib);
 	localDevice->SetFVF(FVF_VERTEX);
-	localDevice->SetTexture(0,texture);
-	localDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0,0,6,0,3); 
-	localDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
+
+	if(texture != 0)
+	{
+		localDevice->SetTexture(0,texture);
+	}
+
+	localDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0,0,6,0,3);
 }

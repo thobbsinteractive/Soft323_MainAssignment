@@ -14,22 +14,12 @@ objectTransform::objectTransform()
 	rotation = D3DXVECTOR3(0.0f, 0.0f, 0.0f); // In radians
 	scale = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 
-	objectBoundaries = Boundary(D3DXVECTOR3(100000.0f, 100000.0f,100000.0f),D3DXVECTOR3(-100000.0f,-100000.0f, -100000.0f));
+	objectBoundaries = Boundary(D3DXVECTOR3(FLT_MAX, FLT_MAX,FLT_MAX),D3DXVECTOR3(-FLT_MAX,-FLT_MAX, -FLT_MAX));
 
 	chaseCamera = false;
 	distanceZ=0;
 	distanceY=0;
-	
-	const float	tol = 0.000000000000001f;		// float type tolerance 
-
-	fMass = 10;
-	fInertia = 10;
-	fInertiaInverse = 1/10;
-	
-	fOrientation = 135;	
-	thrustForce = _THRUSTFORCE*1;
-
-
+	vertexCount = 0;
 };
 
 objectTransform::objectTransform(D3DXVECTOR3 _pos, ViewObject* _pMesh)
@@ -39,22 +29,14 @@ objectTransform::objectTransform(D3DXVECTOR3 _pos, ViewObject* _pMesh)
 	rotation = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	scale = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 
-	objectBoundaries = Boundary(D3DXVECTOR3(100000.0f, 100000.0f,100000.0f),D3DXVECTOR3(-100000.0f,-100000.0f, -100000.0f));
+	objectBoundaries = Boundary(D3DXVECTOR3(FLT_MAX, FLT_MAX,FLT_MAX),D3DXVECTOR3(-FLT_MAX,-FLT_MAX, -FLT_MAX));
 	
 	pMeshObjects.push_back(_pMesh);
 
 	chaseCamera = false;
 	distanceZ=0;
 	distanceY=0;
-
-	const float	tol = 0.000000000000001f;		// float type tolerance 
-
-	fMass = 10;
-	fInertia = 10;
-	fInertiaInverse = 1/10;
-	
-	fOrientation = 135;	
-	thrustForce = _THRUSTFORCE*1;
+	vertexCount = 0;
 };
 
 objectTransform::objectTransform(Boundary _objectBoundaries, ViewObject* _pMesh)
@@ -70,15 +52,7 @@ objectTransform::objectTransform(Boundary _objectBoundaries, ViewObject* _pMesh)
 	chaseCamera = false;
 	distanceZ=0;
 	distanceY=0;
-
-	const float	tol = 0.000000000000001f;		// float type tolerance 
-
-	fMass = 10;
-	fInertia = 10;
-	fInertiaInverse = 1/10;
-	
-	fOrientation = 135;	
-	thrustForce = _THRUSTFORCE*1;
+	vertexCount = 0;
 }
 
 objectTransform::objectTransform(D3DXVECTOR3 _pos, D3DXVECTOR3 _rotation, D3DXVECTOR3 _look, ViewObject* _pMesh)
@@ -93,15 +67,7 @@ objectTransform::objectTransform(D3DXVECTOR3 _pos, D3DXVECTOR3 _rotation, D3DXVE
 	chaseCamera = false;
 	distanceZ=0;
 	distanceY=0;
-
-	const float	tol = 0.000000000000001f;		// float type tolerance 
-
-	fMass = 10;
-	fInertia = 10;
-	fInertiaInverse = 1/10;
-	
-	fOrientation = 135;	
-	thrustForce = _THRUSTFORCE*1;
+	vertexCount = 0;
 };
 
 objectTransform::~objectTransform()
@@ -111,6 +77,13 @@ objectTransform::~objectTransform()
 		//erase all sounds
 		sound.erase(sound.begin() + i);
 	}
+
+	for(int i =0;i < (int)pMeshObjects.size();i++)
+	{
+		//erase all sounds
+		pMeshObjects.erase(pMeshObjects.begin() + i);
+	}
+	printf("objectTransform deconstructor run");
 	
 };
 
@@ -161,24 +134,24 @@ void objectTransform::setDevice(IDirect3DDevice9* _plocalDevice)
 	localDevice = _plocalDevice;
 }
 
-void objectTransform::addObjectSound(CSound* _sound)
+void objectTransform::addObjectSound(LPSTR wavFileName, HWND handle,CSoundManager* sound3Dmanager)
 {
-	if(_sound)
-	{
-		CSound* temp = _sound;
+	//if(_sound)
+	//{
+		_3DSound temp;
+		temp.initialiseSound(localDevice,wavFileName,handle,sound3Dmanager);
 		sound.push_back(temp);
-	}
+	//}
 };
 
-void objectTransform::playSound(int soundNumber)
+void objectTransform::playSound(int soundNumber,D3DXVECTOR3 listenerPosition)
 {
 	if((int)sound.size() > 0)
 	{
-		sound[soundNumber]->Stop();
-		sound[soundNumber]->Reset();
-		sound[soundNumber]->Play();
+		sound[soundNumber].setSoundPos(pos,0.0f);
+		sound[soundNumber].playSound3D();
 	}
-};
+}
 
 float objectTransform::getPosX()
 {
@@ -195,34 +168,34 @@ float objectTransform::getPosZ()
 	return pos.z;
 };
 
-bool objectTransform::checkIfVisibleToThisObject(objectTransform* objectToCheck,float cullingAngleInDegrees)
+bool objectTransform::checkIfVisibleToThisObject(objectTransform* objectToCheck)
 {
-	D3DXVECTOR3 vecToThing;
-	D3DXVECTOR3 objectsCurrentVecDir;
-	float dotProduct;
-	float cullingAngleInRadians = D3DXToRadian(cullingAngleInDegrees);
+	D3DXVECTOR3 objectsPosition;
+	ViewObject* objectsMesh;
 
-	vecToThing.x = objectToCheck->getPosX() - pos.x;
-	vecToThing.y = objectToCheck->getPosY() - pos.y;
-	vecToThing.z = objectToCheck->getPosZ() - pos.z;
-		
-		
-	D3DXVec3Normalize(&vecToThing, &vecToThing);
-	objectsCurrentVecDir = objectToCheck->getCurrentDirectionalVector();
+	objectToCheck->getPosition(&objectsPosition);
+	objectToCheck->getMesh(&objectsMesh);
 
-	dotProduct = D3DXVec3Dot(&vecToThing, &objectsCurrentVecDir);
-
-	if (dotProduct > cos(cullingAngleInRadians))
-	{
-		return true;
-	}else
-	{
-		return false;
-	}
+	return SphereInFrustum(objectsPosition,objectsMesh->getBoundingRadius());
 }
 
-void objectTransform::setCamera(float _distanceZ, float _distanceY)
+float objectTransform::getBoundingRadius()
 {
+	return pMeshObjects[0]->getBoundingRadius();
+}
+
+void objectTransform::setCamera(float _distanceZ, float _distanceY,float width,float height)
+{
+
+	D3DXMatrixPerspectiveFovLH(
+		& matProj,
+		D3DX_PI * 0.25f,
+		(float)width / (float)height,
+		1.0f,
+		1000000000.0f);
+
+	localDevice->SetTransform(D3DTS_PROJECTION, &matProj);
+
 	chaseCamera = true;
 	distanceZ = _distanceZ;
 	distanceY = _distanceY;
@@ -243,8 +216,8 @@ void objectTransform::walk(float units)
 
 	posTemp = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
-	// move only on xz plane for land object
 	D3DXMatrixRotationYawPitchRoll(&RotationMatrix,rotation.x,rotation.y,rotation.z);
+
     D3DXVec3TransformCoord(&newLook, &look, &RotationMatrix);
     D3DXVec3Normalize( &currentVector, &newLook );
 	
@@ -269,57 +242,187 @@ void objectTransform::walk(float units)
 	{
 		pos.z = posTemp.z;
 	}
+
+	if(chaseCamera == true)
+	{
+		updateCamera();
+	}
+	// update the sound position every time the object moves
+	for(int i = 0; i < sound.size(); i++)
+	{
+		sound[i].setSoundPos(pos,0);
+	}
+
+}
+
+float objectTransform::addAngle(float angleToAdd,float existingAngle)
+{
+	float angleInDegrees = angleToAdd*(180/D3DX_PI);
+	float rotationInDegrees = existingAngle*(180/D3DX_PI);
+	float answer = 0.0f;
+	bool finished = false;
+
+	// Ensures all angles stay with limits
+
+	// 0 to 360
+	if(((rotationInDegrees + angleInDegrees) <= 360)&&
+		((rotationInDegrees + angleInDegrees) >= 0)&&
+		(finished == false))
+	{
+		answer = rotationInDegrees + angleInDegrees;
+		finished = true;
+	}
+
+	// 360 to 420
+	if(((rotationInDegrees + angleInDegrees) > 360)&&(finished == false))
+	{
+		answer = rotationInDegrees + angleInDegrees -360;
+		finished = true;
+	}
+
+	// 0 to -360
+	if(((rotationInDegrees + angleInDegrees) < 0)&&
+		((rotationInDegrees + angleInDegrees) >= -360)&&
+		(finished == false))
+	{
+		answer = 360 + (rotationInDegrees + angleInDegrees);
+		finished = true;
+	}
+
+	return answer * (D3DX_PI/180); // In radians
 }
 
 void objectTransform::pitch(float angle)
 {
-	float twoPi = D3DX_PI*2;
+	float angleInDegrees = angle*(180/D3DX_PI);
+	float rotationInDegrees = rotation.y*(180/D3DX_PI);
+	float answer = 0.0f;
+	bool finished = false;
 
-	if (angle > twoPi)
-		angle -= twoPi;         //Just to stop the rotation angle
+	// Ensures all angles stay with limits
 
-	if (angle < 0) 
-		angle += twoPi;
-   
-	rotation.y = rotation.y  + angle;
+	// 0 to 360
+	if(((rotationInDegrees + angleInDegrees) <= 360)&&
+		((rotationInDegrees + angleInDegrees) >= 0)&&
+		(finished == false))
+	{
+		answer = rotationInDegrees + angleInDegrees;
+		finished = true;
+	}
 
+	// 360 to 420
+	if(((rotationInDegrees + angleInDegrees) > 360)&&(finished == false))
+	{
+		answer = rotationInDegrees + angleInDegrees -360;
+		finished = true;
+	}
+
+	// 0 to -360
+	if(((rotationInDegrees + angleInDegrees) < 0)&&
+		((rotationInDegrees + angleInDegrees) >= -360)&&
+		(finished == false))
+	{
+		answer = 360 + (rotationInDegrees + angleInDegrees);
+		finished = true;
+	}
+	
+	rotation.y = answer * (D3DX_PI/180); // In radians
+
+	if(chaseCamera == true)
+	{
+		updateCamera();
+	}
 }
 
 void objectTransform::yaw(float angle)
 {
-	float twoPi = D3DX_PI*2;
+	float angleInDegrees = angle*(180/D3DX_PI);
+	float rotationInDegrees = rotation.x*(180/D3DX_PI);
+	float answer = 0.0f;
+	bool finished = false;
 
-	if (angle > twoPi)
-		angle -= twoPi;         //Just to stop the rotation angle
+	// Ensures all angles stay with limits
 
-	if (angle < 0) 
-		angle += twoPi;
+	// 0 to 360
+	if(((rotationInDegrees + angleInDegrees) <= 360)&&
+		((rotationInDegrees + angleInDegrees) >= 0)&&
+		(finished == false))
+	{
+		answer = rotationInDegrees + angleInDegrees;
+		finished = true;
+	}
 
-	rotation.x = rotation.x  + angle;
+	// 360 to 420
+	if(((rotationInDegrees + angleInDegrees) > 360)&&(finished == false))
+	{
+		answer = rotationInDegrees + angleInDegrees -360;
+		finished = true;
+	}
+
+	// 0 to -360
+	if(((rotationInDegrees + angleInDegrees) < 0)&&
+		((rotationInDegrees + angleInDegrees) >= -360)&&
+		(finished == false))
+	{
+		answer = 360 + (rotationInDegrees + angleInDegrees);
+		finished = true;
+	}
+	
+	rotation.x = answer * (D3DX_PI/180); // In radians
+
+	if(chaseCamera == true)
+	{
+		updateCamera();
+	}
 }
 
 void objectTransform::roll(float angle)
 {
+	float angleInDegrees = angle*(180/D3DX_PI);
+	float rotationInDegrees = rotation.z*(180/D3DX_PI);
+	float answer = 0.0f;
+	bool finished = false;
 
-	float twoPi = D3DX_PI*2;
+	// Ensures all angles stay with limits
 
-	if (angle > twoPi)
-		angle -= twoPi;         //Just to stop the rotation angle
+	// 0 to 360
+	if(((rotationInDegrees + angleInDegrees) <= 360)&&
+		((rotationInDegrees + angleInDegrees) >= 0)&&
+		(finished == false))
+	{
+		answer = rotationInDegrees + angleInDegrees;
+		finished = true;
+	}
 
-	if (angle < 0) 
-		angle += twoPi;
+	// 360 to 420
+	if(((rotationInDegrees + angleInDegrees) > 360)&&(finished == false))
+	{
+		answer = rotationInDegrees + angleInDegrees -360;
+		finished = true;
+	}
 
-	rotation.z = rotation.z  + angle;
+	// 0 to -360
+	if(((rotationInDegrees + angleInDegrees) < 0)&&
+		((rotationInDegrees + angleInDegrees) >= -360)&&
+		(finished == false))
+	{
+		answer = 360 + (rotationInDegrees + angleInDegrees);
+		finished = true;
+	}
+	
+	rotation.z = answer * (D3DX_PI/180); // In radians
+
+	if(chaseCamera == true)
+	{
+		updateCamera();
+	}
 }
 
 void objectTransform::updateCamera()
 {
-	D3DXMATRIX V;
-
 	cameraPosition = pos;
 	cameraLookAt = pos;
 
-	D3DXVECTOR3 up;
 	D3DXVECTOR3 look;
 	D3DXVECTOR3 newLook;
 	D3DXMATRIX RotationMatrix;
@@ -349,18 +452,60 @@ void objectTransform::updateCamera()
 
 	up = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 
-	/*
-	if(rotation.y > 2.0f)
+	
+	// Stops the camera being flipped upside down when rotating up
+	if(((rotation.y*(180/D3DX_PI)) > 90)&&((rotation.y*(180/D3DX_PI)) < 270))
 	{
 		up = D3DXVECTOR3(0.0f, -1.0f, 0.0f);
 	}else
 	{
 		up = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 	}
-*/
 
-	D3DXMatrixLookAtLH(&V, &cameraPosition,&cameraLookAt,&up);
-	localDevice->SetTransform(D3DTS_VIEW, &V);
+}
+
+void objectTransform::updatePositionInRelationTo(D3DXVECTOR3 offsetPostion,D3DXVECTOR3 rotationOfObject,D3DXVECTOR3* newPostion)
+{
+
+	D3DXVECTOR3 look = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 newLook = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXMATRIX RotationMatrix;
+	D3DXVECTOR3 normedVector = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	*newPostion = pos; // equals the postion of this object
+
+	float radins = 270 * (D3DX_PI/180);
+
+	look  = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+
+	// Calculate new coordinates 
+	D3DXMatrixRotationYawPitchRoll(&RotationMatrix,rotationOfObject.x+radins,rotationOfObject.y,rotationOfObject.z);
+    D3DXVec3TransformCoord(&newLook, &look, &RotationMatrix);
+    D3DXVec3Normalize(&normedVector, &newLook );
+
+	*newPostion += normedVector * offsetPostion.x;
+
+	look = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	newLook = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	normedVector = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	look  = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+
+	D3DXMatrixRotationYawPitchRoll(&RotationMatrix,rotationOfObject.x,rotationOfObject.y+radins,rotationOfObject.z);
+    D3DXVec3TransformCoord(&newLook, &look, &RotationMatrix);
+    D3DXVec3Normalize(&normedVector, &newLook );
+
+	*newPostion += normedVector * offsetPostion.y;
+
+	look = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	newLook = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	normedVector = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	look  = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+
+	D3DXMatrixRotationYawPitchRoll(&RotationMatrix,rotationOfObject.x,rotationOfObject.y,rotationOfObject.z+radins);
+    D3DXVec3TransformCoord(&newLook, &look, &RotationMatrix);
+    D3DXVec3Normalize(&normedVector, &newLook );
+
+	*newPostion += normedVector * offsetPostion.z;
 }
 
 void objectTransform::getMatrix(D3DXMATRIX* V)
@@ -374,12 +519,12 @@ void objectTransform::getMatrix(D3DXMATRIX* V)
 	D3DXMatrixTranslation(&Translation, pos.x,pos.y,pos.z);
 
 	*V = RotationMatrix * Scaling * Translation;
+	matWorld = *V;
 }
 
+
 void objectTransform::drawMesh()
-{
-	D3DXMATRIX World;
-	
+{	
 	D3DXMATRIX RotationMatrix;
 	D3DXMATRIX Translation;
 	D3DXMATRIX Scaling;
@@ -388,18 +533,22 @@ void objectTransform::drawMesh()
 	D3DXMatrixRotationYawPitchRoll(&RotationMatrix,rotation.x,rotation.y,rotation.z);
 	D3DXMatrixTranslation(&Translation, pos.x,pos.y,pos.z);
 	
-	World = RotationMatrix * Translation * Scaling;
+	matWorld = RotationMatrix * Translation * Scaling;
 
-	localDevice->SetTransform(D3DTS_WORLD, &World);
+	localDevice->SetTransform(D3DTS_WORLD, &matWorld);
+
 	pMeshObjects[0]->drawObject();
+}
+
+void objectTransform::drawWithoutMatrix(int index)
+{
+	pMeshObjects[index]->drawObjectForRadar();
 }
 
 void objectTransform::drawMesh(int index)
 {
 	if((int)pMeshObjects.size() > 0)
 	{
-		D3DXMATRIX World;
-	
 		D3DXMATRIX RotationMatrix;
 		D3DXMATRIX Translation;
 		D3DXMATRIX Scaling;
@@ -408,9 +557,9 @@ void objectTransform::drawMesh(int index)
 		D3DXMatrixRotationYawPitchRoll(&RotationMatrix,rotation.x,rotation.y,rotation.z);
 		D3DXMatrixTranslation(&Translation, pos.x,pos.y,pos.z);
 	
-		World = RotationMatrix * Translation * Scaling;
+		matWorld = RotationMatrix * Translation * Scaling;
 
-		localDevice->SetTransform(D3DTS_WORLD, &World);
+		localDevice->SetTransform(D3DTS_WORLD, &matWorld);
 		pMeshObjects[index]->drawObject();
 	}
 }
@@ -428,7 +577,8 @@ bool objectTransform::highlevelCollisionDetection(objectTransform* objectToCheck
 	objectToCheckAgainst->getPosition(&objectsPosition);
 
 	objectToCheckAgainst->getMesh(&objectsMesh);
-	return objectsMesh->isPointInsideBoundingBox(&pos,&objectsPosition);
+
+	return objectsMesh->isPointInsideBoundingBox(&objectsPosition,&pos);
 }
 
 bool objectTransform::highlevelCollisionDetection(D3DXVECTOR3 objectsPosition)
@@ -436,10 +586,169 @@ bool objectTransform::highlevelCollisionDetection(D3DXVECTOR3 objectsPosition)
 	return pMeshObjects[0]->isPointInsideBoundingBox(&objectsPosition,&pos);
 }
 
-void objectTransform::drawMeshBounding()
+// really need a detail level vairable in here
+bool objectTransform::lowlevelCollisionDetection(objectTransform* objectToCheckAgainst)
 {
-	D3DXMATRIX World;
+	D3DXVECTOR3 objectsPosition;
+
+	objectToCheckAgainst->getPosition(&objectsPosition);
+
+	// Use inverse of matrix
+	D3DXMATRIX matInverse;
+	D3DXMatrixInverse(&matInverse,NULL,&matWorld);
+
+	// Transform ray origin and direction by inv matrix
+	D3DXVECTOR3 rayObjOrigin,rayObjDirection;
+	D3DXVECTOR3 rayOrigin,rayDirection;
+	objectToCheckAgainst->getPosition(&rayOrigin);
+	objectToCheckAgainst->getRotation(&rayDirection);
+
+	D3DXVec3TransformCoord(&rayObjOrigin,&rayOrigin,&matInverse);
+	D3DXVec3TransformNormal(&rayObjDirection,&rayDirection,&matInverse);
+	D3DXVec3Normalize(&rayObjDirection,&rayObjDirection);
+
+	//We can now call the intersect function on our untransformed graphic mesh data:
+	return pMeshObjects[0]->isPointIntersectingWithMesh(rayObjOrigin,rayObjDirection);
+}
+
+bool objectTransform::lowlevelMeshCollisionDetection(objectTransform* objectToCheckAgainst)
+{
+	IDirect3DVertexBuffer9* _vb;
+
+	D3DXVECTOR3 objectsPosition;
+	ViewObject* objectsMesh;
+	ID3DXMesh* Mesh;
+	bool hasHit = false;
+
+	objectToCheckAgainst->getPosition(&objectsPosition);
+
+	// Use inverse of matrix
+	D3DXMATRIX matInverse;
+	D3DXMatrixInverse(&matInverse,NULL,&matWorld);
+
+	// Transform ray origin and direction by inv matrix
+	D3DXVECTOR3 rayObjOrigin,rayObjDirection;
+	D3DXVECTOR3 rayOrigin,rayDirection;
+	objectToCheckAgainst->getRotation(&rayDirection);
 	
+	objectToCheckAgainst->getMesh(&objectsMesh);
+	Mesh = objectsMesh->getMesh();
+
+	
+	// Vertex format
+	//struct MESHVERTEX { D3DXVECTOR3 p, n; FLOAT tu, tv; };
+	struct MESHVERTEX { D3DXVECTOR3 p;};
+	MESHVERTEX* pVertices;
+
+	Mesh->GetVertexBuffer(&_vb);
+	_vb->Lock(0, 0, (void**)&pVertices, 0);
+	int numberOfVertexs = Mesh->GetNumVertices();
+
+	// Test 10 random vertexs each frame
+	// make sure vertex 385 and 20 (the nose of the fighter are tested)
+	/*
+	for(int i = 0; i < 10; i++)
+	{
+
+		rayOrigin = pVertices[rand() % numberOfVertexs].p;
+		objectToCheckAgainst->getPosition(&rayOrigin);
+
+		D3DXVec3TransformCoord(&rayObjOrigin,&rayOrigin,&matInverse);
+		D3DXVec3TransformNormal(&rayObjDirection,&rayDirection,&matInverse);
+		D3DXVec3Normalize(&rayObjDirection,&rayObjDirection);
+
+			//We can now call the intersect function on our untransformed graphic mesh data:
+
+		if (pMeshObjects[0]->isPointIntersectingWithMesh(rayObjOrigin,rayObjDirection))
+		{
+			hasHit = true;
+		}
+	}*/
+
+	// Test key vertexs across the model
+
+	// Nose
+	// Test vetrex 14
+	rayOrigin = pVertices[14].p;
+	objectToCheckAgainst->getPosition(&rayOrigin);
+
+	D3DXVec3TransformCoord(&rayObjOrigin,&rayOrigin,&matInverse);
+	D3DXVec3TransformNormal(&rayObjDirection,&rayDirection,&matInverse);
+	D3DXVec3Normalize(&rayObjDirection,&rayObjDirection);
+
+	//We can now call the intersect function on our untransformed graphic mesh data:
+	if (pMeshObjects[0]->isPointIntersectingWithMesh(rayObjOrigin,rayObjDirection))
+	{
+		hasHit = true;
+	}
+
+	// Engines
+
+	// Test vetrex 233
+	rayOrigin = pVertices[233].p;
+	objectToCheckAgainst->getPosition(&rayOrigin);
+
+	D3DXVec3TransformCoord(&rayObjOrigin,&rayOrigin,&matInverse);
+	D3DXVec3TransformNormal(&rayObjDirection,&rayDirection,&matInverse);
+	D3DXVec3Normalize(&rayObjDirection,&rayObjDirection);
+
+	//We can now call the intersect function on our untransformed graphic mesh data:
+	if (pMeshObjects[0]->isPointIntersectingWithMesh(rayObjOrigin,rayObjDirection))
+	{
+		hasHit = true;
+	}
+
+	// test vetrex 1365
+	rayOrigin = pVertices[1365].p;
+	objectToCheckAgainst->getPosition(&rayOrigin);
+
+	D3DXVec3TransformCoord(&rayObjOrigin,&rayOrigin,&matInverse);
+	D3DXVec3TransformNormal(&rayObjDirection,&rayDirection,&matInverse);
+	D3DXVec3Normalize(&rayObjDirection,&rayObjDirection);
+
+	//We can now call the intersect function on our untransformed graphic mesh data:
+	if (pMeshObjects[0]->isPointIntersectingWithMesh(rayObjOrigin,rayObjDirection))
+	{
+		hasHit = true;
+	}
+
+	// underside
+
+	// Test vetrex 432
+	rayOrigin = pVertices[432].p;
+	objectToCheckAgainst->getPosition(&rayOrigin);
+
+	D3DXVec3TransformCoord(&rayObjOrigin,&rayOrigin,&matInverse);
+	D3DXVec3TransformNormal(&rayObjDirection,&rayDirection,&matInverse);
+	D3DXVec3Normalize(&rayObjDirection,&rayObjDirection);
+
+	//We can now call the intersect function on our untransformed graphic mesh data:
+	if (pMeshObjects[0]->isPointIntersectingWithMesh(rayObjOrigin,rayObjDirection))
+	{
+		hasHit = true;
+	}
+
+	// test vetrex 143
+	rayOrigin = pVertices[143].p;
+	objectToCheckAgainst->getPosition(&rayOrigin);
+
+	D3DXVec3TransformCoord(&rayObjOrigin,&rayOrigin,&matInverse);
+	D3DXVec3TransformNormal(&rayObjDirection,&rayDirection,&matInverse);
+	D3DXVec3Normalize(&rayObjDirection,&rayObjDirection);
+
+	//We can now call the intersect function on our untransformed graphic mesh data:
+	if (pMeshObjects[0]->isPointIntersectingWithMesh(rayObjOrigin,rayObjDirection))
+	{
+		hasHit = true;
+	}
+
+	Mesh->UnlockVertexBuffer();
+
+	return hasHit;
+}
+
+void objectTransform::drawMeshBounding()
+{	
 	D3DXMATRIX RotationMatrix;
 	D3DXMATRIX Translation;
 	D3DXMATRIX Scaling;
@@ -448,220 +757,84 @@ void objectTransform::drawMeshBounding()
 	D3DXMatrixRotationYawPitchRoll(&RotationMatrix,rotation.x,rotation.y,rotation.z);
 	D3DXMatrixTranslation(&Translation, pos.x,pos.y,pos.z);
 	
-	World = RotationMatrix * Translation * Scaling;
+	matWorld = RotationMatrix * Translation * Scaling;
 
-	localDevice->SetTransform(D3DTS_WORLD, &World);
-	pMeshObjects[0]->drawBoundingBox();
+	localDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	pMeshObjects[(int)pMeshObjects.size()-1]->drawBoundingSphere();
 }
 
-void objectTransform::calcLoads()
+void objectTransform::setChaseCameraMatrix()
 {
-	D3DXVECTOR3	Fb;				// stores the sum of forces
-	D3DXVECTOR3	Mb;				// stores the sum of moments
-	D3DXVECTOR3	Thrust;			// thrust vector
-	
-	// reset forces and moments:
-	forces.x = 0.0f;
-	forces.y = 0.0f;
-	forces.z = 0.0f;	// always zero in 2D
-
-	moment.x = 0.0f;	// always zero in 2D
-	moment.y = 0.0f;	// always zero in 2D
-	moment.z = 0.0f;
-
-	Fb.x = 0.0f;	
-	Fb.y = 0.0f;	
-	Fb.z = 0.0f;	
-
-	Mb.x = 0.0f;
-	Mb.y = 0.0f;
-	Mb.z = 0.0f;
-
-	// Define the thrust vector, which acts through the craft's CG
-	Thrust.x = 0.0f;
-	Thrust.y = 1.0f;
-	Thrust.z = 0.0f;  // zero in 2D
-	Thrust *= thrustForce;
-	
-	// Calculate forces and moments in body space:
-	D3DXVECTOR3	localVelocity;
-	float	fLocalSpeed;
-	D3DXVECTOR3	dragVector;	
-	float	tmp;
-	D3DXVECTOR3	resultant;	
-	D3DXVECTOR3	vtmp;	
-
-		// Calculate the aerodynamic drag force:
-		// Calculate local velocity:
-		// The local velocity includes the velocity due to linear motion of the craft, 
-		// plus the velocity at each element due to the rotation of the craft.
-
-	
-		// rotational part
-		vtmp = D3DXVECTOR3(angularVelocity.y*CD.z - angularVelocity.z*CD.y,
-				  -angularVelocity.x*CD.z + angularVelocity.z*CD.x,
-				  angularVelocity.x*CD.y - angularVelocity.y*CD.x);
-
-		localVelocity = velocityBody + vtmp; 
-
-		// Calculate local air speed
-		fLocalSpeed = sqrt(localVelocity.x*localVelocity.x + localVelocity.y*localVelocity.y + localVelocity.z*localVelocity.z);
-
-		// Find the direction in which drag will act.
-		// Drag always acts inline with the relative velocity but in the opposing direction
-		if(fLocalSpeed > tol) 
-		{
-			D3DXVec3Normalize(&localVelocity, &localVelocity);
-			dragVector = -localVelocity;		
-
-			// Determine the resultant force on the element.
-			float trustMagnitude = sqrt(Thrust.x*Thrust.x + Thrust.y*Thrust.y + Thrust.z*Thrust.z);
-
-			float vectorMultplyThrustLV = Thrust.x*localVelocity.x + Thrust.y*localVelocity.y + Thrust.z*localVelocity.z;
-
-			double f;
-			if((Thrust.x*localVelocity.x + Thrust.y*localVelocity.y + Thrust.z*localVelocity.z) /(trustMagnitude * fLocalSpeed) > 0)
-				f = 2;	
-			else
-				f = 1;
-
-			tmp = 0.5f * fLocalSpeed*fLocalSpeed * ProjectedArea * f;		
-			resultant = dragVector * _LINEARDRAGCOEFFICIENT * tmp; // simulate fuselage drag
-
-			// Keep a running total of these resultant forces (total force)
-			Fb += resultant;
-		
-			// Calculate the moment about the CG of this element's force
-			// and keep a running total of these moments (total moment)
-			vtmp = D3DXVECTOR3(CD.y*resultant.z - CD.z*resultant.y,
-				  -CD.x*resultant.z + CD.z*resultant.x,
-				  CD.x*resultant.y - CD.y*resultant.x);
-
-			Mb += vtmp;
-		}
-
-		// Calculate the Port & Starboard bow thruster forces:
-		// Keep a running total of these resultant forces (total force)
-		Fb += 3*pThrust;
-		
-
-		// Calculate the moment about the CG of this element's force
-		// and keep a running total of these moments (total moment) 
-		vtmp = D3DXVECTOR3(CPT.y*pThrust.z - CPT.z*pThrust.y,
-				  -CPT.x*pThrust.z + CPT.z*pThrust.x,
-				  CPT.x*pThrust.y - CPT.y*pThrust.x);
-
-		Mb += vtmp;
-
-		// Keep a running total of these resultant forces (total force)
-		Fb += 3*sThrust;
-
-		// Calculate the moment about the CG of this element's force
-		// and keep a running total of these moments (total moment)
-		vtmp = D3DXVECTOR3(CST.y*sThrust.z - CST.z*sThrust.y,
-				  -CST.x*sThrust.z + CST.z*sThrust.x,
-				  CST.x*sThrust.y - CST.y*sThrust.x);
-		Mb += vtmp;
-
-		// do other applied forces here
-		Fb += Fa;
-		vtmp = D3DXVECTOR3(Pa.y*Fa.z - Pa.z*Fa.y,
-				  -Pa.x*Fa.z + Pa.z*Fa.x,
-				  Pa.x*Fa.y - Pa.y*Fa.x);
-		Mb += vtmp;
-
-		// Calculate rotational drag
-		float angularVelocityMagnitude = sqrt(angularVelocity.x*angularVelocity.x + angularVelocity.y*angularVelocity.y + angularVelocity.z*angularVelocity.z);
-		if(angularVelocityMagnitude > tol)
-		{
-			vtmp.x = 0;
-			vtmp.y = 0;
-			tmp = 0.5f * angularVelocity.z*angularVelocity.z * ProjectedArea;
-			if(angularVelocity.z > 0.0)
-				vtmp.z = -_ANGULARDRAGCOEFFICIENT * tmp;		
-			else
-				vtmp.z = _ANGULARDRAGCOEFFICIENT * tmp;		
-
-			Mb += vtmp;
-		}
-
-
-	// Now add the propulsion thrust
-	Fb += Thrust; // no moment since line of action is through CG
-
-	// Convert forces from model space to earth space
-	forces = rotate3D(fOrientation, Fb);
-
-	moment += Mb;	
+	D3DXMATRIX matView;
+	D3DXMatrixLookAtLH(&matView, &cameraPosition,&cameraLookAt,&up);
+	localDevice->SetTransform(D3DTS_VIEW, &matView);
+	buildViewFrustum(matView);
 }
 
-void objectTransform::updateBodyEuler(double dt)
+// Based on http://www.c-unit.com/tutorials/mdirectx/?t=45
+void objectTransform::buildViewFrustum(D3DXMATRIX matView)
 {
-		D3DXVECTOR3 a;
-		D3DXVECTOR3 dv;
-		D3DXVECTOR3 ds;
-		float  aa;
-		float  dav;
-		float  dr;
-	
-		// Calculate forces and moments:
-		calcLoads();
-		
-		// Integrate linear equation of motion:
-		a = forces / fMass;
-		
-		dv = a * dt;
-		velocity += dv;
+	// Get combined matrix
+	D3DXMATRIXA16 matComb;
+	//D3DXMATRIXA16 matComb;
+	D3DXMatrixMultiply(&matComb, &matView, &matProj);
 
-		ds = velocity * dt;
-		pos += ds;
+	// Left clipping plane
+	m_frustumPlanes[0].m_normal.x = matComb._14 + matComb._11; 
+	m_frustumPlanes[0].m_normal.y = matComb._24 + matComb._21; 
+	m_frustumPlanes[0].m_normal.z = matComb._34 + matComb._31; 
+	m_frustumPlanes[0].m_distance = matComb._44 + matComb._41;
 
-		// Integrate angular equation of motion:
-		aa = moment.z / fInertia;
+	// Right clipping plane 
+	m_frustumPlanes[1].m_normal.x = matComb._14 - matComb._11; 
+	m_frustumPlanes[1].m_normal.y = matComb._24 - matComb._21; 
+	m_frustumPlanes[1].m_normal.z = matComb._34 - matComb._31; 
+	m_frustumPlanes[1].m_distance = matComb._44 - matComb._41;
 
-		dav = aa * dt;
-		
-		angularVelocity.z += dav;
-		
-		dr = (angularVelocity.z * dt) * (180.0f / D3DX_PI);
-		//dr = RadiansToDegrees(angularVelocity.z * dt);
-		fOrientation += dr; 
-		
-		// Misc. calculations:
-		fSpeed = sqrt(velocity.x*velocity.x + velocity.y*velocity.y + velocity.z*velocity.z);		
-		velocityBody = rotate3D(-fOrientation, velocity);	
+	// Top clipping plane 
+	m_frustumPlanes[2].m_normal.x = matComb._14 - matComb._12; 
+	m_frustumPlanes[2].m_normal.y = matComb._24 - matComb._22; 
+	m_frustumPlanes[2].m_normal.z = matComb._34 - matComb._32; 
+	m_frustumPlanes[2].m_distance = matComb._44 - matComb._42;
+
+	// Bottom clipping plane 
+	m_frustumPlanes[3].m_normal.x = matComb._14 + matComb._12; 
+	m_frustumPlanes[3].m_normal.y = matComb._24 + matComb._22; 
+	m_frustumPlanes[3].m_normal.z = matComb._34 + matComb._32; 
+	m_frustumPlanes[3].m_distance = matComb._44 + matComb._42;
+
+	// Near clipping plane 
+	m_frustumPlanes[4].m_normal.x = matComb._13; 
+	m_frustumPlanes[4].m_normal.y = matComb._23; 
+	m_frustumPlanes[4].m_normal.z = matComb._33; 
+	m_frustumPlanes[4].m_distance = matComb._43;
+
+	// Far clipping plane 
+	m_frustumPlanes[5].m_normal.x = matComb._14 - matComb._13; 
+	m_frustumPlanes[5].m_normal.y = matComb._24 - matComb._23; 
+	m_frustumPlanes[5].m_normal.z = matComb._34 - matComb._33; 
+	m_frustumPlanes[5].m_distance = matComb._44 - matComb._43; 
 }
 
-void objectTransform::setThrusters(bool p, bool s)
+bool objectTransform::SphereInFrustum(D3DXVECTOR3 position,float radius)
 {
-	pThrust.x = 0;
-	pThrust.y = 0;
-	sThrust.x = 0;
-	sThrust.y = 0;
-	
-	if(p)
-		pThrust.x = -_STEERINGFORCE;
-	if(s)
-		sThrust.x = _STEERINGFORCE;
-}
+	D3DXVECTOR4 position4 = D3DXVECTOR4( position.x, position.y, position.z, 1.0f );
 
 
-D3DXVECTOR3 objectTransform::rotate3D( float angle, D3DXVECTOR3 u)
-{
-	float	x,y;
+	for ( int i = 0; i < 6; i++ ) 
+	{ 
+		D3DXVECTOR4 frustumPlanes = D3DXVECTOR4(m_frustumPlanes[i].m_normal.x, 
+											m_frustumPlanes[i].m_normal.y, 
+											m_frustumPlanes[i].m_normal.z, 
+											m_frustumPlanes[i].m_distance);
 
-	x = u.x * cos(-angle*(D3DX_PI/180)) + u.y * sin(-angle*(D3DX_PI/180));
-	y = -u.x * sin(-angle*(D3DX_PI/180)) + u.y * cos(-angle*(D3DX_PI/180));
-
-	return D3DXVECTOR3( x, y, 0);
-}
-
-void objectTransform::modulateThrust(bool up)
-{
-	double	dT = up ? _DTHRUST:-_DTHRUST;
-
-	thrustForce += dT;
-
-	if(thrustForce > _MAXTHRUST) thrustForce = _MAXTHRUST;
-	if(thrustForce < _MINTHRUST) thrustForce = _MINTHRUST;
+		// *1.5 on the radius ensures objects do not just dissapear from the edge of the screen
+		// change it back to just "radius" to see object culling in effect
+		if ( D3DXVec4Dot(&frustumPlanes,&position4 ) + radius*1.5 < 0 ) 
+		{ 
+			// Outside the frustum, reject it! 
+			return false; 
+		} 
+	} 
+	return true; 
 }

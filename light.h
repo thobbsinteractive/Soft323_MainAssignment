@@ -8,6 +8,7 @@
 #ifndef INC_LIGHT_H
 #define INC_LIGHT_H
 
+#include <d3d9.h>
 #include <d3dx9.h>
 
 class Light

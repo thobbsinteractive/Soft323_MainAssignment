@@ -12,16 +12,9 @@
 #include "d3dutil.h"
 #include "boundary.h"
 #include "viewObject.h"
-
-#define	 _THRUSTFORCE				20.0f/2
-#define	 _MAXTHRUST					80.0f/2
-#define	 _MINTHRUST					0.0f
-#define	 _DTHRUST					0.01f
-#define  _STEERINGFORCE				6.0f
-#define  _LINEARDRAGCOEFFICIENT		0.3f
-#define  _ANGULARDRAGCOEFFICIENT	5000.0f
-
-#define	_TOL 1e-10
+#include "frustumPlane.h"
+#include "vertex.h"
+#include "3DSound.h"
 
 class objectTransform
 {
@@ -30,18 +23,13 @@ public:
 	objectTransform(D3DXVECTOR3 _pos, ViewObject* _pMesh);
 	objectTransform(D3DXVECTOR3 _pos, D3DXVECTOR3 _rotation, D3DXVECTOR3 _look, ViewObject* _pMesh);
 	objectTransform(Boundary _objectBoundaries, ViewObject* _pMesh);
-	~objectTransform();
+	virtual ~objectTransform();
 
 	D3DXVECTOR3 getCurrentDirectionalVector();
-	bool checkIfVisibleToThisObject(objectTransform* objectToCheck,float cullingAngleInDegrees);
+	bool checkIfVisibleToThisObject(objectTransform* objectToCheck);
 	void getPosition(D3DXVECTOR3* _pos);
 	void setPosition(D3DXVECTOR3* _pos);
 	void getCameraPosition(D3DXVECTOR3* _pos);
-
-	void calcLoads();
-	void updateBodyEuler(double dt);
-	void setThrusters(bool p, bool s);
-	void modulateThrust(bool up);
 
 	void getRotation(D3DXVECTOR3* _rotation);
 	void setRotation(D3DXVECTOR3* _rotation);
@@ -51,25 +39,38 @@ public:
 	void setMesh(ViewObject* _pMesh);
 	void getMesh(ViewObject** _pMesh);
 	void setDevice(IDirect3DDevice9* localDevice);
-	void setCamera(float _distanceZ, float _distanceY);
+	void setCamera(float _distanceZ, float _distanceY,float width, float height); // only needs to run once to setup camera
 	bool highlevelCollisionDetection(objectTransform* objectToCheckAgainst);
+	bool lowlevelCollisionDetection(objectTransform* objectToCheckAgainst);
+	bool lowlevelMeshCollisionDetection(objectTransform* objectToCheckAgainst);
 	bool highlevelCollisionDetection(D3DXVECTOR3 objectsPosition);
-	D3DXVECTOR3 rotate3D(float angle, D3DXVECTOR3 u);
+	void drawWithoutMatrix(int index);
+	float addAngle(float angleToAdd,float existingAngle);
 
-	virtual void walk(float units); // forward/backward
-	void updateCamera();
+	void updatePositionInRelationTo(D3DXVECTOR3 offsetPostion,D3DXVECTOR3 rotationOfObject,D3DXVECTOR3* newPostion);
+
+	void walk(float units); // forward/backward
 	void pitch(float angle); // rotate on left vector
 	void yaw(float angle); // rotate on up vector
 	void roll(float angle); // rotate on look vector
-	virtual void getMatrix(D3DXMATRIX* V);
-	void addObjectSound(CSound* _sound);
-	void playSound(int soundNumber);
+	void getMatrix(D3DXMATRIX* V);
+	void addObjectSound(LPSTR wavFileName, HWND handle,CSoundManager* sound3Dmanager);
+	void playSound(int soundNumber,D3DXVECTOR3 listenerPosition);
 	void drawMesh();
 	void drawMesh(int index);
 	void drawMeshBounding();
 	float getPosX();
 	float getPosY();
 	float getPosZ();
+	void setChaseCameraMatrix();
+
+	// Based on http://www.c-unit.com/tutorials/mdirectx/?t=45
+	// and 
+	// http://www.toymaker.info/Games/html/direct3d_faq.html#D3D5
+
+	void buildViewFrustum(D3DXMATRIX matView);
+	bool SphereInFrustum(D3DXVECTOR3 pos,float radius);
+	float getBoundingRadius();
 
 	template<class T> void Release(T t)
 	{
@@ -90,10 +91,19 @@ public:
 	};
 
 protected:
+
+	void updateCamera();
+
 	bool chaseCamera;
 	float distanceZ;
 	float distanceY;
 
+
+	D3DXMATRIX matProj; // Projection matrix for chase camera
+	D3DXMATRIX matWorld;
+	frustumPlane m_frustumPlanes[6]; // frustum from camera, help to cull objects
+
+	D3DXVECTOR3 pos;
 	D3DXVECTOR3 scale;
 	D3DXVECTOR3 look;
 	D3DXVECTOR3 rotation;
@@ -101,41 +111,16 @@ protected:
 
 	D3DXVECTOR3 cameraPosition; // camera Position
 	D3DXVECTOR3 cameraLookAt; // camera lookAt;
+	D3DXVECTOR3 up; // camera up
+	D3DXVECTOR3 angularVelocity;
 
 
-	Boundary    objectBoundaries;
-	std::vector<CSound*> sound;  //can have a number of associated sounds
+	Boundary objectBoundaries;
+	std::vector<_3DSound> sound;  //can have a number of associated sounds
 	std::vector<ViewObject*> pMeshObjects; //can have a number of meshes
 	IDirect3DDevice9* localDevice;
+	float fOrientation;
+	int vertexCount;
 
-	float	fMass;				// total mass (constant)
-	float	fInertia;			// mass moment of inertia in body coordinates (constant)
-	float	fInertiaInverse;	// inverse of mass moment of inertia (constant)
-	
-	D3DXVECTOR3	pos;			// position in earth coordinates
-	D3DXVECTOR3	velocity;			// velocity in earth coordinates
-	D3DXVECTOR3	velocityBody;		// velocity in body coordinates
-	D3DXVECTOR3	angularVelocity;	// angular velocity in body coordinates
-		
-	float	fSpeed;				// speed (magnitude of the velocity)
-	float	fOrientation;		// orientation 	
-
-	D3DXVECTOR3	forces;			// total force on body
-	D3DXVECTOR3	moment;			// total moment (torque) on body (2D: about z-axis only)
-
-	float	thrustForce;		// Magnitude of the thrust force
-	D3DXVECTOR3	pThrust, sThrust;	// bow thruster forces
-
-	D3DXVECTOR3	CD;
-	D3DXVECTOR3	CT;
-	D3DXVECTOR3	CPT;
-	D3DXVECTOR3	CST;
-
-	D3DXVECTOR3	Fa;// other applied force
-	D3DXVECTOR3  Pa;// location of other applied force
-
-	float tol;
-
-	float	ProjectedArea;
 };
 #endif // INC_OBJECTTRANSFORM_H

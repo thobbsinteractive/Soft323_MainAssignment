@@ -10,6 +10,7 @@
 #ifndef __cubeEnviromentH__
 #define __cubeEnviromentH__
 
+#include <d3d9.h>
 #include <d3dx9.h>
 #include <vector>
 #include "vertex.h"
@@ -21,7 +22,14 @@ class cubeEnviroment
 public:
 	cubeEnviroment();
 	~cubeEnviroment();
-	void loadTextures(IDirect3DDevice9* device);
+	bool loadMeshIntoBuffer(char sysPath[],
+							char backPath[],
+							char frontPath[],
+							char leftPath[],
+							char rightPath[],
+							char topPath[],
+							char bottomPath[],
+							IDirect3DDevice9* Device);
 	void draw();
 
 	template<class T> void Release(T t)
@@ -46,8 +54,8 @@ private:
 	IDirect3DDevice9* localDevice;
 	std::vector<IDirect3DTexture9*> Textures;
 	D3DMATERIAL9 material;
-	IDirect3DVertexBuffer9* _vb;
-	IDirect3DIndexBuffer9*  _ib;
-	Vertex* v;
+	ID3DXMesh* pMesh;
+	ID3DXBuffer* adjBuffer;
+	int maxTextureSize;
 };
 #endif //__cubeEnviromentH__

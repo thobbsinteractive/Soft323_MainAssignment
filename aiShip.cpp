@@ -1,4 +1,5 @@
 #include "aiShip.h"
+#include <math.h>
 
 AIShip::AIShip()
 {
@@ -7,23 +8,71 @@ AIShip::AIShip()
 	turning = false;
 	avoiding  = false;
 	manover  = false;
-	targetShipIndex = 0;
 	awaitingNewObjective = true;
 	currentNavPoint = 0;
-	totalNumberOfNavPoints = 0;
 
 	objectivePos = D3DXVECTOR3(0.0f, 0.0f,0.0f);
+	fOrientation = 0;
+	launching = false;
+	time = 0.0f;
+	capital = false;
+	turnSpeed = 2.0f;
+	timeToLaunchfor = 0.0f;
+	hasEnemyTarget = false;
+
+	timeToAvoidFor = 0.0f;
 }
 
 AIShip::~AIShip()
 {
+	for(int i = 0; i < (int)navPointsList.size(); i++)
+	{
+		navPointsList.erase(navPointsList.begin() + i);
+	}
+}
 
+void AIShip::setCapital(bool value)
+{
+	capital=value;
+	// we want captial ships to be slower
+	if(value == true)
+	{
+		speedMax = 10.0f;
+		health = 200.0f;
+		//health = 20.0f;
+	}
+}
 
+void AIShip::getAIFireMatrix(int i,D3DXMATRIX* V,D3DXVECTOR3 playerRotation)
+{
+	fireBalls[i].getMatrix(&*V,playerRotation);
+}
+
+void AIShip::setTargetShip(Ship* _targetedShip)
+{
+	targetedShip = _targetedShip;
+	hasEnemyTarget = true;
+}
+
+bool AIShip::getHasTarget()
+{
+	return hasEnemyTarget;
+}
+
+void AIShip::isLaunching(float _time)
+{
+	timeToLaunchfor = time;
+	launching = true;
 }
 
 bool AIShip::getIFF()
 {
 	return friendly;
+}
+
+bool AIShip::isCapital()
+{
+	return capital;
 }
 
 void AIShip::setIFF(bool _friendly)
@@ -60,13 +109,8 @@ float AIShip::getObjectiveZPos()
 void AIShip::addNavPoint(NavPoint newNavPoint)
 {
 	NavPoint* tempNav = new NavPoint();
-	tempNav->index = newNavPoint.index;
 	tempNav->location = newNavPoint.location;
-	tempNav->visited = newNavPoint.visited;
-
 	navPointsList.push_back(tempNav);
-
-	totalNumberOfNavPoints++;
 }
 
 bool AIShip::getObjectiveStatus()
@@ -76,99 +120,311 @@ bool AIShip::getObjectiveStatus()
 
 void AIShip::getNextNavPoint()
 {
-	bool navPointSet = false;
-	int unvisited = 0;
-
-	for(int i = 0; i < (int)navPointsList.size();i++)
+	if((int)navPointsList.size() > 0)
 	{
-		if(navPointSet == false)
+		if((int)navPointsList.size() == currentNavPoint)
 		{
-			if(navPointsList[i]->visited == false)
-			{
-				objectivePos = navPointsList[i]->location; // Get navpoints location
-				navPointsList[i]->visited = true; // so we don't visit it again
-				awaitingNewObjective = false;
+			currentNavPoint =0;	
+		}
 
-				navPointSet	= true; // breaks out of the loop when new point is set
-				currentNavPoint++;
+		targetPos = navPointsList[currentNavPoint]->location; // Get navpoints location
+
+		currentNavPoint++;
+	}
+}
+
+void AIShip::setAvoiding(bool isAvoiding,float _time,Ship* _targetedShip)
+{
+	avoiding = isAvoiding;
+	avoidanceShip = _targetedShip;
+	timeToAvoidFor = _time;
+}
+
+void AIShip::setAvoiding(bool isAvoiding)
+{
+	avoiding = isAvoiding;
+}
+
+// turn away from target
+void AIShip::avoidTurn(float timeDelta)
+{
+	float x = 0.0f;
+	float y = 0.0f;
+	float yawAmount = 0.0f;
+	float pitchAmount = 0.0f;
+	float difference = 0.0f;
+	D3DXVECTOR3 posToAvoid;
+	avoidanceShip->getPosition(&posToAvoid);
+
+	getAngleToAvoid(&x,&y,posToAvoid);
+
+	if(x > rotation.x)
+	{
+		difference = x - rotation.x;
+
+		if(difference > (1*(D3DX_PI/180)))
+		{
+			if(difference > (180*(D3DX_PI/180)))
+			{
+				yawAmount = turnSpeed * timeDelta;
+			}else
+			{
+				yawAmount = -turnSpeed * timeDelta;
 			}
 		}
 	}
 
-	if(totalNumberOfNavPoints == currentNavPoint) // If this is the last point in the list
+	if(x < rotation.x)
 	{
-		// reset the visited status to start navpoint again
-		for(int i = 0; i < (int)navPointsList.size();i++)
+		difference = rotation.x - x;
+		
+		if(difference > (1*(D3DX_PI/180)))
 		{
-			navPointsList[i]->visited = false; 
-			currentNavPoint = 0;
+			if(difference > (180*(D3DX_PI/180)))
+			{
+				yawAmount = -turnSpeed * timeDelta;
+			}else
+			{
+				yawAmount = turnSpeed * timeDelta;
+			}
 		}
 	}
 
 
+	if(y > rotation.y)
+	{
+		difference = y - rotation.y;
+
+		if(difference > (1*(D3DX_PI/180)))
+		{
+			if(difference > (180*(D3DX_PI/180)))
+			{
+				pitchAmount = turnSpeed * timeDelta;
+			}else
+			{
+				pitchAmount = -turnSpeed * timeDelta;
+			}
+		}
+	}
+
+	if(y < rotation.y)
+	{
+		difference = rotation.y - y;
+		
+		if(difference > (1*(D3DX_PI/180)))
+		{
+			if(difference > (180*(D3DX_PI/180)))
+			{
+				pitchAmount = -turnSpeed * timeDelta;
+			}else
+			{
+				pitchAmount = turnSpeed * timeDelta;
+			}
+		}
+	}
+
+	yaw(yawAmount);
+	pitch(pitchAmount);
 }
 
-void AIShip::manovering()
+void AIShip::manovering(float timeDelta)
 {
-	/*
-	if(targetShipIndex == 0) // if there are no ememy fighters
-	{	
-		// check ship is at nav point
-		if((pos.x > (objectivePos.x-100)) && (pos.x < (objectivePos.x+100)))
-		{
-			if((pos.y > (objectivePos.y-100)) && (pos.y < (objectivePos.y+100)))
+
+	// First Priority is to avoid
+	if((avoiding == true)||(timeToAvoidFor > 0))
+	{
+			time += timeDelta;
+
+			if(avoiding == true)
 			{
-				if((pos.z > (objectivePos.z-100)) && (pos.z < (objectivePos.z+100)))
-				{
+				currentSpeedSetting = speedMax/2; // half speed
+			}
+
+			if((timeToAvoidFor >0)&&(avoiding == false))
+			{
+				currentSpeedSetting = speedMax;
+			}
+
+			if(avoiding == false)
+			{
+				currentSpeedSetting = speedMax;
+			}
+			
+			avoidTurn(timeDelta);
+
+			if(speed < currentSpeedSetting)
+			{
+				walk(timeDelta*40,true);
+			}else
+			{
+				update(timeDelta);
+			}
+
+			// If we are out of the ships collision field keep head for set time
+			if(timeToAvoidFor > 0)
+			{
+				timeToAvoidFor -= timeDelta;
+			}
+	}
+
+
+	// update Position each time
+	if(hasEnemyTarget == true)
+	{
+		targetedShip->getPosition(&targetPos);
+
+		if(targetedShip->getHealth() <= 0)
+		{
+			hasEnemyTarget = false;
+			currentSpeedSetting = 0.0f;
+		}
+	}
+
+	float distance = distanceToTarget();
+
+	if((hasEnemyTarget == true)&&(avoiding == false)&&(timeToAvoidFor <= 0))
+	{
+		// fire when in range
+		if((distance < 100000)&&(capital == false))
+		{
+			shoot();
+		}
+
+		currentSpeedSetting = speedMax;
+		turn(timeDelta);
+		
+		if(speed < currentSpeedSetting)
+		{
+			walk(timeDelta*40,true);
+		}else
+		{
+			update(timeDelta);
+		}
+	}
+	
+	// If the ship is not launching from a carrier
+	if((launching == false)&&(avoiding == false)&&(hasEnemyTarget == false)&&(timeToAvoidFor <= 0))
+	{			
+			if(distance < 1000)
+			{
 					getNextNavPoint();
-					awaitingNewObjective = true;
-					//currentSpeedSetting = 0.0f;
+			}else
+			{
+				// If the ship has no nav points just sit.
+				if((int)navPointsList.size() == 0)
+				{
+					currentSpeedSetting = 0.0f;
+
+				}else  // If the ship has not yet reached the target point
+				{		// Keep heading for it
+					currentSpeedSetting = speedMax;
+					turn(timeDelta);
+					
+					if(speed < currentSpeedSetting)
+					{
+						walk(timeDelta*40,true);
+					}else
+					{
+						update(timeDelta);
+					}
 				}
 			}
-		}
+	}
 
-		// If the ship has not yet reached the nav point
-		if(awaitingNewObjective == false)
+	if(launching == true)
+	{
+		if(time < timeToLaunchfor)
 		{
-			// Keep heading for it
+			time += timeDelta;
 			currentSpeedSetting = speedMax;
+				//currentSpeedSetting = 0.0f;
+				turn(timeDelta);
+				if(speed < currentSpeedSetting)
+				{
+					walk(timeDelta*40,true);
+				}else
+				{
+					update(timeDelta);
+				}
 		}
-	}*/
-
-}
-
-void AIShip::behavior(float units)
-{
-	manovering();
-	walk(units,false);
+	}
 }
 
 void AIShip::turn(float timeDelta)
 {
-	bool	p = false;
-	bool	s = false;
+	float x = 0.0f;
+	float y = 0.0f;
+	float yawAmount = 0.0f;
+	float pitchAmount = 0.0f;
+	float difference = 0.0f;
 
-	//currentSpeedSetting = speedMax/3;
-	// Turn
-	D3DXVECTOR3 u,v;
+	getAngleToRotate(&x,&y);
 
-	u = (targetpos - pos);
+	if(x > rotation.x)
+	{
+		difference = x - rotation.x;
 
-	///////
-	//Vector	VRotate2D( float angle, Vector u)
+		if(difference > (0.2*(D3DX_PI/180)))
+		{
+			if(difference > (180*(D3DX_PI/180)))
+			{
+				yawAmount = -turnSpeed * timeDelta;
+			}else
+			{
+				yawAmount = turnSpeed * timeDelta;
+			}
+		}
+	}
 
-	float x,y;
-	//fOrientation = 0;
-	x = u.x * cos(-fOrientation * 3.14 / 180) + u.y * sin(-fOrientation* 3.14 / 180);
-	y = -u.x * sin(-fOrientation * 3.14 / 180) + u.y * cos(-fOrientation * 3.14 / 180);
-
-	u = D3DXVECTOR3(x,y,0);
-	D3DXVec3Normalize(&u, &u);
-
-	if(u.x < -_TOL)
-		p = true;
-	else if(u.x > _TOL)
-		s = true;
+	if(x < rotation.x)
+	{
+		difference = rotation.x - x;
 		
-	setThrusters(p,s);
+		if(difference > (0.2*(D3DX_PI/180)))
+		{
+			if(difference > (180*(D3DX_PI/180)))
+			{
+				yawAmount = turnSpeed * timeDelta;
+			}else
+			{
+				yawAmount = -turnSpeed * timeDelta;
+			}
+		}
+	}
+
+
+	if(y > rotation.y)
+	{
+		difference = y - rotation.y;
+
+		if(difference > (0.2*(D3DX_PI/180)))
+		{
+			if(difference > (180*(D3DX_PI/180)))
+			{
+				pitchAmount = -turnSpeed * timeDelta;
+			}else
+			{
+				pitchAmount = turnSpeed * timeDelta;
+			}
+		}
+	}
+
+	if(y < rotation.y)
+	{
+		difference = rotation.y - y;
+		
+		if(difference > (0.2*(D3DX_PI/180)))
+		{
+			if(difference > (180*(D3DX_PI/180)))
+			{
+				pitchAmount = turnSpeed * timeDelta;
+			}else
+			{
+				pitchAmount = -turnSpeed * timeDelta;
+			}
+		}
+	}
+
+	yaw(yawAmount);
+	pitch(pitchAmount);
 }

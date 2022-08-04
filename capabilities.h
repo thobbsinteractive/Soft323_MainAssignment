@@ -8,7 +8,15 @@
 #ifndef INC_CAPABILITIES_H
 #define INC_CAPABILITIES_H
 
+#include <d3d9.h>
 #include <d3dx9.h>
+#include<windows.h>
+
+#include <commctrl.h>
+#include <d3d9.h>
+#include <fstream>
+
+#include "gameSettings.h"
 
 class Capabilities
 {
@@ -17,6 +25,9 @@ public:
 	~Capabilities();
 	bool getCapabilities(int* width,					// [out] A pointer to the set screen width
 						 int* height,					// [out] A pointer to the set screen height
+						 int* textureSize,
+						 GameSettings settings,
+						 HINSTANCE hInstance,
 						 HWND* hwnd,
 						 IDirect3DDevice9** device);	// [out] A pointer to the created device)
 
@@ -29,6 +40,8 @@ public:
 					int vp,
 					D3DDEVTYPE deviceType,
 					IDirect3DDevice9** device);
+private:
+	GameSettings userSettings;
 };
 
 #endif //#ifndef INC_CAPABILITIES_H

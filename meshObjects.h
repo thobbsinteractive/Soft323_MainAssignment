@@ -40,6 +40,7 @@ public:
 	void checkFire();
 
 	void updateAIShips(float timeDelta);
+	void drawCockpit();
 
 	void cleanUP();
 

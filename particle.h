@@ -1,0 +1,20 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// particle.h
+// Author: Frank Luna
+// Description: A structure for a particle
+//          
+//////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef INC_PARTICAL_H
+#define INC_PARTICAL_H
+
+#include <d3d9.h>
+#include <d3dx9.h>
+
+struct Particle
+{
+		D3DXVECTOR3 position;
+		D3DCOLOR    color;
+		static const DWORD FVF;
+};
+
+#endif //INC_PARTICAL_H
