@@ -21,6 +21,7 @@ public:
 	~ViewObject();
 
 	bool loadMeshIntoBuffer(char path[], IDirect3DDevice9* localDevice);
+	D3DXVECTOR3 getBoundingLocalPosition();
 	bool computeBoundingSphere();
 	void drawObject();
 	void drawObjectBump();

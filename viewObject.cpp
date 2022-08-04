@@ -72,7 +72,6 @@ bool ViewObject::loadMeshIntoBuffer(char path[],
 			if( mtrls[i].pTextureFilename != 0 )
 			{
 				// yes, load the texture for the ith subset
-				
 				IDirect3DTexture9* tex = 0;
 				D3DXCreateTextureFromFileA(
 					localDevice,
@@ -135,6 +134,11 @@ void ViewObject::optmizeMesh()
 	}
 };
 
+D3DXVECTOR3 ViewObject::getBoundingLocalPosition()
+{
+	return sphere.localPos;
+}
+
 bool ViewObject::computeBoundingSphere()
 {
 	HRESULT hr = 0;
@@ -146,7 +150,7 @@ bool ViewObject::computeBoundingSphere()
 			(D3DXVECTOR3*)v,
 			pMesh->GetNumVertices(),
 			D3DXGetFVFVertexSize(pMesh->GetFVF()),
-			&sphere.pos,
+			&sphere.localPos,
 			&sphere.radius);
 	
 	//sphere.radius = sphere.radius/2;
@@ -169,27 +173,22 @@ bool ViewObject::computeBoundingSphere()
 
 bool ViewObject::isPointInsideBoundingBox(D3DXVECTOR3* p,D3DXVECTOR3* currentPosition)
 {
-	sphere.setPosition(*currentPosition);
+	sphere.setWorldPosition(*currentPosition);
 	return sphere.isPointInside(*p);
 }
 
 bool ViewObject::isPointIntersectingWithMesh(D3DXVECTOR3 rayObjOrigin,D3DXVECTOR3 rayObjDirection)
 {
-	BOOL hasHit;
-	float distanceToCollision;
+	BOOL hasHit = false;
+	float distanceToCollision = 0;
 
 	D3DXIntersect(pMesh, &rayObjOrigin, &rayObjDirection, &hasHit, NULL, NULL, NULL, &distanceToCollision, NULL, NULL);
 
-
-	if((distanceToCollision < 1000.0f)&&(hasHit == true))
+	if((distanceToCollision != 0.0f)&&(distanceToCollision < 1000.0f)&&(hasHit == true))
 	{
-		hasHit = true;	
-	}else
-	{
-		hasHit = false;
+		return true;	
 	}
-
-	return hasHit;
+	return false;
 }
 
 ID3DXMesh* ViewObject::getMesh()
