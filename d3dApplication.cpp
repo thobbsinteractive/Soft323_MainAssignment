@@ -91,10 +91,10 @@ bool d3dApplication::initialiseGeometery()
 	playerShip.setRotation(&Rotation);
 	playerShip.setScale(&Scale);
 
-	playerShip.addObjectSound(_T("sound/playerengine.wav"),*pMainWindowHandle,sound3Dmanager);
-	playerShip.addObjectSound(_T("sound/fire.wav"),*pMainWindowHandle,sound3Dmanager);
-	playerShip.addObjectSound(_T("sound/bleep.wav"),*pMainWindowHandle,sound3Dmanager);
-	playerShip.addObjectSound(_T("sound/collision.wav"),*pMainWindowHandle,sound3Dmanager);
+	playerShip.addObjectSound(L"sound/playerengine.wav",*pMainWindowHandle,sound3Dmanager);
+	playerShip.addObjectSound(L"sound/fire.wav",*pMainWindowHandle,sound3Dmanager);
+	playerShip.addObjectSound(L"sound/bleep.wav",*pMainWindowHandle,sound3Dmanager);
+	playerShip.addObjectSound(L"sound/collision.wav",*pMainWindowHandle,sound3Dmanager);
 
 	gameObjects.setDevice(d3dDevice,sound3Dmanager);
 	gameObjects.initialiseSounds(*pMainWindowHandle);

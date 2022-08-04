@@ -41,7 +41,7 @@ bool cubeEnviroment::loadMeshIntoBuffer(char sysPath[],
 
     // D3DXLoadMeshFromX
     // Load the mesh from the specified file
-	if( FAILED( D3DXLoadMeshFromX((LPCWSTR)sysPath,
+	if( FAILED(D3DXLoadMeshFromXA(sysPath,
 									D3DXMESH_MANAGED, 
                                     localDevice,
 									&adjBuffer,
@@ -50,7 +50,7 @@ bool cubeEnviroment::loadMeshIntoBuffer(char sysPath[],
 									&numMtrls, 
                                     &pMesh ) ) )
     {
-		MessageBox(NULL, _T("Could not find Mesh"), _T("Meshes.exe"), MB_OK);
+		MessageBox(NULL, L"Could not find Mesh", L"Meshes.exe", MB_OK);
         result = false;
     }
 

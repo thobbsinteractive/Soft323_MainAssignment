@@ -20,7 +20,7 @@ public:
 	ViewObject();
 	~ViewObject();
 
-	bool loadMeshIntoBuffer(char sysPath[], IDirect3DDevice9* localDevice);
+	bool loadMeshIntoBuffer(char path[], IDirect3DDevice9* localDevice);
 	bool computeBoundingSphere();
 	void drawObject();
 	void drawObjectBump();

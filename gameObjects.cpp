@@ -218,7 +218,7 @@ void GameObjects::setDevice(IDirect3DDevice9* _pDevice,CSoundManager* _soundMana
 void GameObjects::initialiseSounds(HWND handle)
 {
 	localHandle = handle;
-	explosion.initialiseSound(pLocalDevice, _T("sound/explode.wav"),handle,sound3Dmanager);
+	explosion.initialiseSound(pLocalDevice, L"sound/explode.wav",handle,sound3Dmanager);
 }
 
 void GameObjects::drawCockpit()
