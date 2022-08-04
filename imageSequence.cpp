@@ -20,7 +20,7 @@ void imageSequence::setupTexture(IDirect3DDevice9* device)
 void imageSequence::addTexture(char* textureName)
 {
 	IDirect3DTexture9* temp = 0;
-	D3DXCreateTextureFromFile(localDevice,textureName,&temp);
+	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)textureName,&temp);
 	Textures.push_back(temp);
 }
 

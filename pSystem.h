@@ -13,12 +13,12 @@
 #ifndef __pSystemH__
 #define __pSystemH__
 
+#include <list>
+#include <tchar.h>
 
 #include "particle.h"
 #include "attribute.h"
 #include "boundingBox.h"
-
-#include <list>
 
 class PSystem
 {

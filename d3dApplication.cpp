@@ -91,10 +91,10 @@ bool d3dApplication::initialiseGeometery()
 	playerShip.setRotation(&Rotation);
 	playerShip.setScale(&Scale);
 
-	playerShip.addObjectSound("sound/playerengine.wav",*pMainWindowHandle,sound3Dmanager);
-	playerShip.addObjectSound("sound/fire.wav",*pMainWindowHandle,sound3Dmanager);
-	playerShip.addObjectSound("sound/bleep.wav",*pMainWindowHandle,sound3Dmanager);
-	playerShip.addObjectSound("sound/collision.wav",*pMainWindowHandle,sound3Dmanager);
+	playerShip.addObjectSound(_T("sound/playerengine.wav"),*pMainWindowHandle,sound3Dmanager);
+	playerShip.addObjectSound(_T("sound/fire.wav"),*pMainWindowHandle,sound3Dmanager);
+	playerShip.addObjectSound(_T("sound/bleep.wav"),*pMainWindowHandle,sound3Dmanager);
+	playerShip.addObjectSound(_T("sound/collision.wav"),*pMainWindowHandle,sound3Dmanager);
 
 	gameObjects.setDevice(d3dDevice,sound3Dmanager);
 	gameObjects.initialiseSounds(*pMainWindowHandle);
@@ -124,7 +124,7 @@ void d3dApplication::initialiseFonts()
 	// Create a font object and initialize it.
 	//
 
-	Font = new CD3DFont("Times New Roman", 16, 0);
+	Font = new CD3DFont(_T("Times New Roman"), 16, 0);
 	Font->InitDeviceObjects(d3dDevice );
 	Font->RestoreDeviceObjects();
 }
@@ -338,19 +338,19 @@ bool d3dApplication::run(GameSettings _userSettings, HINSTANCE hInstance,HWND* m
 	// Get card config and start device
 	if (configWindow.getCapabilities(&width, &height,&maxTextureSize,userSettings,hInstance,mainWindowHandle,&d3dDevice) == false)
 	{
-		MessageBox(NULL, "Card configuration failed", "FinalAssignment.exe", MB_OK);
+		MessageBox(NULL, _T("Card configuration failed"), _T("FinalAssignment.exe"), MB_OK);
 		errors = true;
 	}
 
 	if (initialiseGeometery() == false)
 	{
-		MessageBox(NULL, "Loading geometry failed", "FinalAssignment.exe", MB_OK);
+		MessageBox(NULL, _T("Loading geometry failed"), _T("FinalAssignment.exe"), MB_OK);
 		errors = true;
 	}
 
 	if(input.setup_Input(&hInstance,mainWindowHandle,&keyPressesInput) == false)
 	{
-		MessageBox(NULL, "Direct Input config failed", "FinalAssignment.exe", MB_OK);
+		MessageBox(NULL, _T("Direct Input config failed"), _T("FinalAssignment.exe"), MB_OK);
 		errors = true;
 	}
 
@@ -468,8 +468,8 @@ bool d3dApplication::renderLowDetail(float timeDelta)
 			//Draw FPS
 			if( Font )
 			{
-				Font->DrawText(20, 20, 0xffffffff, FPSString);
-				Font->DrawText(20, 50, 0xffffffff, Values);
+				Font->DrawText(20, 20, 0xffffffff, (LPCWSTR)FPSString);
+				Font->DrawText(20, 50, 0xffffffff, (LPCWSTR)Values);
 			};
 
 			//playerShip.updateAllsounds();

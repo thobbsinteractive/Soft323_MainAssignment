@@ -102,7 +102,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					{
 						//switch to D3D loop and init D3D with settings
 						getConfigSettings();
-						UnregisterClass("Direct3dConfig",GetModuleHandle(NULL));
+						UnregisterClass(_T("Direct3dConfig"),GetModuleHandle(NULL));
 						::PostQuitMessage(0);
 					break;
 					}
@@ -110,7 +110,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					case ID_CANCEL:
 					{
 						quit = true;
-						UnregisterClass("Direct3dConfig",GetModuleHandle(NULL));
+						UnregisterClass(_T("Direct3dConfig"),GetModuleHandle(NULL));
 						::PostQuitMessage(0);
 					break;
 					}
@@ -136,47 +136,47 @@ bool setupConfigWindow(HINSTANCE hInstance,HWND* ptrMainWindowHandle,int width, 
 	wc.hCursor       = LoadCursor(0, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(GRAY_BRUSH);
 	wc.lpszMenuName  = 0;
-	wc.lpszClassName = "Direct3dConfig";
+	wc.lpszClassName = (LPCWSTR)"Direct3dConfig";
 
 	if( !RegisterClass(&wc) ) 
 	{
-		::MessageBox(0, "RegisterClass() - FAILED", 0, 0);
+		::MessageBox(0, _T("RegisterClass() - FAILED"), 0, 0);
 		return false;
 	}
 		
-	*ptrMainWindowHandle = ::CreateWindow("Direct3dConfig", 
-									   "Direct3dConfig", 
-									   WS_EX_TOPMOST,
-									   0, 
-									   0, 
-									   width, 
-									   height,
-									   0 /*parent hwnd*/, 
-									   0 /* menu */, 
-									   hInstance, 
-									   0 /*extra*/); 
+	*ptrMainWindowHandle = ::CreateWindow(_T("Direct3dConfig"),
+		_T("Direct3dConfig"),
+		WS_EX_TOPMOST,
+		0, 
+		0, 
+		width, 
+		height,
+		0 /*parent hwnd*/, 
+		0 /* menu */, 
+		hInstance, 
+		0 /*extra*/); 
 
 	if( !*ptrMainWindowHandle )
 	{
-		::MessageBox(0, "CreateWindow() - FAILED", 0, 0);
+		::MessageBox(0, _T("CreateWindow() - FAILED"), 0, 0);
 		return false;
 	}
 
 	//create window elements
-	m_hLblResolution = CreateWindow("static","Resolution:",WS_CHILD | WS_VISIBLE | SS_LEFT,20,24,200,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
-	m_hCbResolution = CreateWindow("combobox", "", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP,160,20,160,100,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hLblResolution = CreateWindow(_T("static"), _T("Resolution:"),WS_CHILD | WS_VISIBLE | SS_LEFT,20,24,200,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hCbResolution = CreateWindow(_T("combobox"), _T(""), WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP,160,20,160,100,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
 	
-	m_hLblMusic = CreateWindow("static","Music:",WS_CHILD | WS_VISIBLE | SS_LEFT,20,54,200,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
-	m_hCbMusic = CreateWindow("combobox", "", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP,160,50,160,100,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
-	m_hLblFullScreen = CreateWindow("static","Full Screen:",WS_CHILD | WS_VISIBLE | SS_LEFT,20,84,200,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
-	m_hCbFullScreen = CreateWindow("combobox", "", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP,160,80,160,100,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
-	m_hLblMeshDetail = CreateWindow("static","Mesh Detail:",WS_CHILD | WS_VISIBLE | SS_LEFT,20,144,200,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
-	m_hCbMeshDetail = CreateWindow("combobox", "", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP,160,140,160,100,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hLblMusic = CreateWindow(_T("static"), _T("Music:"),WS_CHILD | WS_VISIBLE | SS_LEFT,20,54,200,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hCbMusic = CreateWindow(_T("combobox"), _T(""), WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP,160,50,160,100,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hLblFullScreen = CreateWindow(_T("static"), _T("Full Screen:"),WS_CHILD | WS_VISIBLE | SS_LEFT,20,84,200,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hCbFullScreen = CreateWindow(_T("combobox"), _T(""), WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP,160,80,160,100,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hLblMeshDetail = CreateWindow(_T("static"), _T("Mesh Detail:"),WS_CHILD | WS_VISIBLE | SS_LEFT,20,144,200,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hCbMeshDetail = CreateWindow(_T("combobox"), _T(""), WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP,160,140,160,100,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
 	
-	m_hBtnStart = CreateWindow("button","Start",WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | WS_TABSTOP,65,250,80,24,*ptrMainWindowHandle,(HMENU)ID_START,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
-	m_hBtnCancel = CreateWindow("button","Cancel",WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | WS_TABSTOP,175,250,80,24,*ptrMainWindowHandle,(HMENU)ID_CANCEL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hBtnStart = CreateWindow(_T("button"), _T("Start"),WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | WS_TABSTOP,65,250,80,24,*ptrMainWindowHandle,(HMENU)ID_START,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hBtnCancel = CreateWindow(_T("button"), _T("Cancel"),WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | WS_TABSTOP,175,250,80,24,*ptrMainWindowHandle,(HMENU)ID_CANCEL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
 
-	m_hLblGameSettings = CreateWindow("static","Default settings are: 1042,music on, fullscreen on, Mesh detail high",WS_CHILD | WS_VISIBLE | SS_LEFT,20,280,500,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hLblGameSettings = CreateWindow(_T("static"), _T("Default settings are: 1042,music on, fullscreen on, Mesh detail high"),WS_CHILD | WS_VISIBLE | SS_LEFT,20,280,500,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
 
 	//fill combo boxes
 	SendMessage(m_hCbResolution,CB_ADDSTRING,0,(long)"1024 x 768");
@@ -218,29 +218,29 @@ bool setupApplicationWindow(HINSTANCE hInstance,HWND* ptrMainWindowHandle,int wi
 	wc.hCursor       = LoadCursor(0, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	wc.lpszMenuName  = 0;
-	wc.lpszClassName = "Direct3D9App";
+	wc.lpszClassName = (LPCWSTR)"Direct3D9App";
 
 	if( !RegisterClass(&wc) ) 
 	{
-		::MessageBox(0, "RegisterClass() - FAILED", 0, 0);
+		::MessageBox(0, _T("RegisterClass() - FAILED"), 0, 0);
 		return false;
 	}
 		
-	*ptrMainWindowHandle = ::CreateWindow("Direct3D9App", 
-									   "Direct3D9App", 
-									   WS_POPUP,//WS_EX_TOPMOST,
-									   0, 
-									   0, 
-									   width, 
-									   height,
-									   0 /*parent hwnd*/, 
-									   0 /* menu */, 
-									   hInstance, 
-									   0 /*extra*/); 
+	*ptrMainWindowHandle = ::CreateWindow(_T("Direct3D9App"),
+		_T("Direct3D9App"),
+		WS_POPUP,//WS_EX_TOPMOST,
+		0, 
+		0, 
+		width, 
+		height,
+		0 /*parent hwnd*/, 
+		0 /* menu */, 
+		hInstance, 
+		0 /*extra*/); 
 
 	if( !*ptrMainWindowHandle )
 	{
-		::MessageBox(0, "CreateWindow() - FAILED", 0, 0);
+		::MessageBox(0, _T("CreateWindow() - FAILED"), 0, 0);
 		return false;
 	}
 
@@ -260,7 +260,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	if(setupConfigWindow(hInstance,&mainWindowHandle,640,480) == false)
 	{
-		MessageBox(NULL, "Could Not initialise setup Window", "FinalAssignment.exe", MB_OK);
+		MessageBox(NULL, _T("Could Not initialise setup Window"), _T("FinalAssignment.exe"), MB_OK);
 	}
 
 	MSG msg;
@@ -281,12 +281,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 		if(setupApplicationWindow(hInstance,&mainWindowHandle,userSettings.width,userSettings.height) == false)
 		{
-			MessageBox(NULL, "Could Not initialise application Window", "FinalAssignment.exe", MB_OK);
+			MessageBox(NULL, _T("Could Not initialise application Window"), _T("FinalAssignment.exe"), MB_OK);
 		}
 
 		if (!myGame->run(userSettings, hInstance,&mainWindowHandle,userSettings.width,userSettings.height))
 		{
-			::MessageBox(0, "InitD3D() - FAILED",0,0);
+			::MessageBox(0, _T("InitD3D() - FAILED"),0,0);
 		}
 
 		// Clean Up

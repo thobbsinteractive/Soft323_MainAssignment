@@ -134,12 +134,12 @@ void objectTransform::setDevice(IDirect3DDevice9* _plocalDevice)
 	localDevice = _plocalDevice;
 }
 
-void objectTransform::addObjectSound(LPSTR wavFileName, HWND handle,CSoundManager* sound3Dmanager)
+void objectTransform::addObjectSound(LPTSTR wavFileName, HWND handle,CSoundManager* sound3Dmanager)
 {
 	//if(_sound)
 	//{
 		_3DSound temp;
-		temp.initialiseSound(localDevice,wavFileName,handle,sound3Dmanager);
+		temp.initialiseSound(localDevice, wavFileName, handle, sound3Dmanager);
 		sound.push_back(temp);
 	//}
 };

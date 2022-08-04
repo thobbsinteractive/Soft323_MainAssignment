@@ -1,6 +1,7 @@
 #ifndef INC_BRIEFINGSCREEN_H
 #define INC_BRIEFINGSCREEN_H
 
+#include <tchar.h>
 #include "billboardSprite.h"
 #include "mp3Player.h"
 

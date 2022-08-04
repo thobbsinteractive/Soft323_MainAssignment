@@ -7,7 +7,6 @@
 //-----------------------------------------------------------------------------
 #define STRICT
 #include <stdio.h>
-#include <tchar.h>
 #include <D3D9.h>
 #include "D3DFont.h"
 #include "D3DUtil.h"

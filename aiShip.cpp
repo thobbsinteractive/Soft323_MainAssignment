@@ -1,5 +1,4 @@
 #include "aiShip.h"
-#include <math.h>
 
 AIShip::AIShip()
 {

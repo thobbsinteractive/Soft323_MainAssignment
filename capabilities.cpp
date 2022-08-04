@@ -112,7 +112,7 @@ bool Capabilities::initDevice(IDirect3D9* d3d9,
 	if( FAILED(hr) )
 	{
 		d3d9->Release(); // done with d3d9 object
-		::MessageBox(0, "CreateDevice() - FAILED", 0, 0);
+		::MessageBox(0, _T("CreateDevice() - FAILED"), 0, 0);
 		return false;
 	}
 

@@ -9,6 +9,7 @@
 #define INC_BILLBOARDSPRITE_H
 
 //#include "dsutil.h" 
+#include <tchar.h>
 #include "d3dutil.h"
 #include "vertex.h"
 

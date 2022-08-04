@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
     </Filter>
+    <Filter Include="DXUT">
+      <UniqueIdentifier>{5aa4a561-a44a-4e2d-aa8a-d22a87e8c200}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXUT\Header Files">
+      <UniqueIdentifier>{6a2b1780-6d18-4448-be03-b0f60139bb39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DXUT\Source Files">
+      <UniqueIdentifier>{1e83a56f-2458-4255-b3ff-7a73606a0cec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3DSound.cpp">
@@ -94,6 +103,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="viewObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\dxerr.cpp">
+      <Filter>DXUT\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\DXUT.cpp">
+      <Filter>DXUT\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\DXUTenum.cpp">
+      <Filter>DXUT\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\DXUTmisc.cpp">
+      <Filter>DXUT\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dsutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -203,6 +227,21 @@
     <ClInclude Include="viewObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\dxerr.h">
+      <Filter>DXUT\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\DXUTenum.h">
+      <Filter>DXUT\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\DXUT.h">
+      <Filter>DXUT\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\DXUTmisc.h">
+      <Filter>DXUT\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dsutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="models\low\cockpit.X">
@@ -227,5 +266,8 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="Core\packages.config">
+      <Filter>DXUT</Filter>
+    </None>
   </ItemGroup>
 </Project>

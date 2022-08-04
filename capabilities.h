@@ -10,11 +10,13 @@
 
 #include <d3d9.h>
 #include <d3dx9.h>
-#include<windows.h>
-
+#include <windows.h>
+#include <tchar.h>
 #include <commctrl.h>
 #include <d3d9.h>
 #include <fstream>
+
+#include "Core\DXUT.h"
 
 #include "gameSettings.h"
 

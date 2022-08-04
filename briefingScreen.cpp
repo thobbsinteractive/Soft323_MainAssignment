@@ -42,7 +42,7 @@ void BriefingScreen::initialise(int _width,int _height,IDirect3DDevice9* device)
 	lf.OutputPrecision  = 0;                       
 	lf.Quality        = 0;           
 	lf.PitchAndFamily = 0;           
-	strcpy(lf.FaceName, "Times New Roman"); // font style
+	strcpy((char*)lf.FaceName, "Times New Roman"); // font style
 
 	//
 	// Create an ID3DXFont based on 'lf'.
@@ -50,7 +50,7 @@ void BriefingScreen::initialise(int _width,int _height,IDirect3DDevice9* device)
 
 	if(FAILED(D3DXCreateFontIndirect(localDevice, &lf, &font)))
 	{
-		::MessageBox(0, "D3DXCreateFontIndirect() - FAILED", 0, 0);
+		::MessageBox(0, _T("D3DXCreateFontIndirect() - FAILED"), 0, 0);
 		::PostQuitMessage(0);
 	}
 }
@@ -78,7 +78,7 @@ void BriefingScreen::displayScreen()
 	localDevice->SetTransform(D3DTS_WORLD, &World);
 	backGround.draw();
 
-	font->DrawText(NULL,text.c_str(), -1,&rect,DT_TOP | DT_LEFT, 0xffffffff);
+	font->DrawText(NULL, (LPCWSTR)text.c_str(), -1,&rect,DT_TOP | DT_LEFT, 0xffffffff);
 
 	D3DXVECTOR3 cameraPosition = D3DXVECTOR3(0.0f,0.0f,-910.0f);
 	D3DXVECTOR3 cameraLookAt = D3DXVECTOR3(0.0f,0.0f,100.0f);

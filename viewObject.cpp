@@ -36,7 +36,7 @@ bool ViewObject::loadMeshIntoBuffer(char sysPath[],
 
     // D3DXLoadMeshFromX
     // Load the mesh from the specified file
-	if( FAILED( D3DXLoadMeshFromX( sysPath, 
+	if( FAILED( D3DXLoadMeshFromX( (LPCWSTR)sysPath,
 									D3DXMESH_MANAGED, 
                                     localDevice,
 									&adjBuffer,
@@ -45,7 +45,7 @@ bool ViewObject::loadMeshIntoBuffer(char sysPath[],
 									&numMtrls, 
                                     &pMesh ) ) )
     {
-		MessageBox(NULL, "Could not find Mesh", "Meshes.exe", MB_OK);
+		MessageBox(NULL, _T("Could not find Mesh"), _T("Meshes.exe"), MB_OK);
         result = false;
     }
 
@@ -75,7 +75,7 @@ bool ViewObject::loadMeshIntoBuffer(char sysPath[],
 				IDirect3DTexture9* tex = 0;
 				D3DXCreateTextureFromFile(
 					localDevice,
-					mtrls[i].pTextureFilename,
+					(LPCWSTR)mtrls[i].pTextureFilename,
 					&tex);
 
 				// save the loaded texture
@@ -130,7 +130,7 @@ void ViewObject::optmizeMesh()
 
 	if(FAILED(hr))
 	{
-		::MessageBox(0, "OptimizeInplace() - FAILED", 0, 0);
+		::MessageBox(0, _T("OptimizeInplace() - FAILED"), 0, 0);
 	}
 };
 

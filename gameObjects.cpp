@@ -218,7 +218,7 @@ void GameObjects::setDevice(IDirect3DDevice9* _pDevice,CSoundManager* _soundMana
 void GameObjects::initialiseSounds(HWND handle)
 {
 	localHandle = handle;
-	explosion.initialiseSound(pLocalDevice,"sound/explode.wav",handle,sound3Dmanager);
+	explosion.initialiseSound(pLocalDevice, _T("sound/explode.wav"),handle,sound3Dmanager);
 }
 
 void GameObjects::drawCockpit()
@@ -1566,8 +1566,8 @@ bool GameObjects::addAIShip(ViewObject* _pMeshL,
 		temp->addObjectSound(_pSound);
 	}*/
 
-	temp->addObjectSound("sound/engine.wav",localHandle,sound3Dmanager);
-	temp->addObjectSound("sound/fire.wav",localHandle,sound3Dmanager);
+	temp->addObjectSound(_T("sound/engine.wav"),localHandle,sound3Dmanager);
+	temp->addObjectSound(_T("sound/fire.wav"),localHandle,sound3Dmanager);
 
 	if(_pPos)
 	{
@@ -1646,8 +1646,8 @@ bool GameObjects::addAICapShip(ViewObject* _pMeshL,
 	
 	//if(_pSound)
 	//{
-	temp->addObjectSound("sound/engine.wav",localHandle,sound3Dmanager);
-	temp->addObjectSound("sound/fire.wav",localHandle,sound3Dmanager);
+	temp->addObjectSound(_T("sound/engine.wav"),localHandle,sound3Dmanager);
+	temp->addObjectSound(_T("sound/fire.wav"),localHandle,sound3Dmanager);
 	//}
 
 	if(_pPos)

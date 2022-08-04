@@ -1,8 +1,10 @@
 #ifndef INC_AISHIP_H
 #define INC_AISHIP_H
 
+#include <math.h>
 #include "ship.h"
 #include "navPoint.h"
+#include "Core\DXUT.h"
 
 class AIShip : public Ship
 {

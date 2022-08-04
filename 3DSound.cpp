@@ -1,4 +1,5 @@
 #include "3DSound.h"
+#include "Core\DXUT.h"
 
 _3DSound::_3DSound()
 {
@@ -21,7 +22,7 @@ void _3DSound::reset()
 	pSound3D->Reset();
 }
 
-void _3DSound::initialiseSound(IDirect3DDevice9* _pDevice,LPSTR wavFileName, HWND handle,CSoundManager *_sound3Dmanager)
+void _3DSound::initialiseSound(IDirect3DDevice9* _pDevice,LPTSTR wavFileName, HWND handle,CSoundManager *_sound3Dmanager)
 {
 	//sound3Dmanager = _sound3Dmanager;
 	pLocalDevice = _pDevice;
@@ -42,7 +43,7 @@ void _3DSound::initialiseSound(IDirect3DDevice9* _pDevice,LPSTR wavFileName, HWN
     hr |= sound3Dmanager->Get3DListenerInterface( &pDSListener );
 
     if( FAILED(hr) )
-		MessageBox(NULL, "Can't initialise directSound manager", "FinalAssignment.exe", MB_OK);
+		MessageBox(NULL, _T("Can't initialise directSound manager"), _T("FinalAssignment.exe"), MB_OK);
 
 
         // Get listener parameters
@@ -52,7 +53,7 @@ void _3DSound::initialiseSound(IDirect3DDevice9* _pDevice,LPSTR wavFileName, HWN
     CWaveFile waveFile;
     if FAILED(waveFile.Open( wavFileName, NULL, WAVEFILE_READ ))
     {
-	   MessageBox(NULL, "Can't open Wav file", "FinalAssignment.exe", MB_OK);
+	   MessageBox(NULL, _T("Can't open Wav file"), _T("FinalAssignment.exe"), MB_OK);
        return;
     }
 
@@ -60,21 +61,21 @@ void _3DSound::initialiseSound(IDirect3DDevice9* _pDevice,LPSTR wavFileName, HWN
     WAVEFORMATEX* pwfx = waveFile.GetFormat();
     if( pwfx == NULL )
     {
-		MessageBox(NULL, "Invalid wave file format.", "FinalAssignment.exe", MB_OK);
+		MessageBox(NULL, _T("Invalid wave file format."), _T("FinalAssignment.exe"), MB_OK);
         return;
     }
 
     if( pwfx->nChannels > 1 )
     {
         // Too many channels in wave.  Sound must be mono when using DSBCAPS_CTRL3D
-		MessageBox(NULL, "Wave file must be mono for 3D control.", "FinalAssignment.exe", MB_OK);
+		MessageBox(NULL, _T("Wave file must be mono for 3D control."), _T("FinalAssignment.exe"), MB_OK);
         return;
     }
 
     if( pwfx->wFormatTag != WAVE_FORMAT_PCM )
     {
         // Sound must be PCM when using DSBCAPS_CTRL3D
-		MessageBox(NULL, "Wave file must be PCM for 3D control.", "FinalAssignment.exe", MB_OK);
+		MessageBox(NULL, _T("Wave file must be PCM for 3D control."), _T("FinalAssignment.exe"), MB_OK);
         return;
     }
 
@@ -86,18 +87,18 @@ void _3DSound::initialiseSound(IDirect3DDevice9* _pDevice,LPSTR wavFileName, HWN
 
     if( FAILED( hr ) || hr == DS_NO_VIRTUALIZATION )
     {
-		MessageBox(NULL, "Error creating 3-d sound.", "FinalAssignment.exe", MB_OK);
+		MessageBox(NULL, _T("Error creating 3-d sound."), _T("FinalAssignment.exe"), MB_OK);
         if( DS_NO_VIRTUALIZATION == hr )
         {
-			MessageBox(NULL, "The 3D virtualization algorithm requested is not supported under this"
-						"operating system.  It is available only on Windows 2000, Windows ME, and Windows 98 with WDM"
-                        "drivers and beyond.  Creating buffer with no virtualization.", 
-						 "FinalAssignment.exe", MB_OK);
+			MessageBox(NULL, _T("The 3D virtualization algorithm requested is not supported under this"
+                "operating system.  It is available only on Windows 2000, Windows ME, and Windows 98 with WDM"
+                "drivers and beyond.  Creating buffer with no virtualization."), 
+                _T("FinalAssignment.exe"), MB_OK);
        
         }
 
         // Unknown error, but not a critical failure, so just update the status
-		MessageBox(NULL, "Could not create sound buffer.",  "FinalAssignment.exe",MB_OK);
+		MessageBox(NULL, _T("Could not create sound buffer."), _T("FinalAssignment.exe"),MB_OK);
 
         return;
     }
@@ -105,7 +106,7 @@ void _3DSound::initialiseSound(IDirect3DDevice9* _pDevice,LPSTR wavFileName, HWN
     // Get the 3D buffer from the secondary buffer
     if( FAILED( hr = pSound3D->Get3DBufferInterface( 0, &pDS3DBuffer ) ) )
     {
-		MessageBox(NULL, "Could not get 3D buffer.",  "FinalAssignment.exe",MB_OK);
+		MessageBox(NULL, _T("Could not get 3D buffer."), _T("FinalAssignment.exe"),MB_OK);
         return;
     }
 

@@ -51,7 +51,7 @@ void PlayerShip::initialiseFonts(int _width,int _height)
 	lf.OutputPrecision  = 0;                       
 	lf.Quality        = 0;           
 	lf.PitchAndFamily = 0;           
-	strcpy(lf.FaceName, "Times New Roman"); // font style
+	strcpy((char*)lf.FaceName, "Times New Roman"); // font style
 
 	//
 	// Create an ID3DXFont based on 'lf'.
@@ -59,7 +59,7 @@ void PlayerShip::initialiseFonts(int _width,int _height)
 
 	if(FAILED(D3DXCreateFontIndirect(localDevice, &lf, &font)))
 	{
-		::MessageBox(0, "D3DXCreateFontIndirect() - FAILED", 0, 0);
+		::MessageBox(0, _T("D3DXCreateFontIndirect() - FAILED"), 0, 0);
 		::PostQuitMessage(0);
 	}
 
@@ -164,8 +164,8 @@ void PlayerShip::displayTargetStatus()
 
 		hudValues[49] = '\0'; // mark end of string
 
-		font->DrawText(NULL,aiTextFinal.c_str(), -1,&rect,DT_TOP | DT_LEFT, 0xffffffff);
-		font->DrawText(NULL,hudValues, -1,&hud,DT_CENTER | DT_LEFT, 0xffffffff);
+		font->DrawText(NULL, (LPCWSTR)aiTextFinal.c_str(), -1,&rect,DT_TOP | DT_LEFT, 0xffffffff);
+		font->DrawText(NULL, (LPCWSTR)hudValues, -1,&hud,DT_CENTER | DT_LEFT, 0xffffffff);
 	}
 
 	sprintf(playerValues, "Hull:%.0f\nSpeed:%.2f",
@@ -175,8 +175,8 @@ void PlayerShip::displayTargetStatus()
 	playerValues[49] = '\0'; // mark end of string
 
 	//Draw AI ship details
-	font->DrawText(NULL,playerValues, -1,&rect2,DT_TOP | DT_LEFT, 0xffffffff);
-	font->DrawText(NULL,objectivesList.c_str(), -1,&objectivesListing,DT_TOP | DT_CENTER, 0xffffffff);
+	font->DrawText(NULL, (LPCWSTR)playerValues, -1,&rect2,DT_TOP | DT_LEFT, 0xffffffff);
+	font->DrawText(NULL, (LPCWSTR)objectivesList.c_str(), -1,&objectivesListing,DT_TOP | DT_CENTER, 0xffffffff);
 
 	targetedShip = NULL; // Clear every frame so as to keep the HUD upto date
 };

@@ -10,6 +10,7 @@
 #define INC_GAMEINPUT_H
 
 #include <dinput.h>
+#include <tchar.h>
 #include "userInputs.h"
 
 /*

@@ -10,7 +10,6 @@
 #define STRICT
 #include <windows.h>
 #include <mmsystem.h>
-#include <dxerr9.h>
 #include <dsound.h>
 #include "DSUtil.h"
 #include "DXUtil.h"
@@ -672,7 +671,9 @@ LPDIRECTSOUNDBUFFER CSound::GetFreeBuffer()
     if( m_apDSBuffer == NULL )
         return FALSE; 
 
-    for( DWORD i=0; i<m_dwNumBuffers; i++ )
+    DWORD i = 0;
+
+    for(i=0; i<m_dwNumBuffers; i++ )
     {
         if( m_apDSBuffer[i] )
         {  

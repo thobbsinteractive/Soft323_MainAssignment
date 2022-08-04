@@ -8,8 +8,10 @@
 #ifndef INC_3DSOUND_H
 #define INC_3DSOUND_H
 
+#include <tchar.h>
 #include "d3dutil.h"
 #include "dsutil.h"  //Microsoft helper class.
+#include "Core\DXUT.h"
 
 class _3DSound
 {
@@ -17,7 +19,7 @@ public:
 	
 	_3DSound();
 	~_3DSound();
-	void initialiseSound(IDirect3DDevice9* _pDevice,LPSTR wavFileName, HWND handle,CSoundManager *_sound3Dmanager);
+	void initialiseSound(IDirect3DDevice9* _pDevice,LPTSTR wavFileName, HWND handle,CSoundManager *_sound3Dmanager);
 	void setSoundPos(D3DXVECTOR3 position,float speed);
 	void setListenerSoundPos(D3DXVECTOR3 position,float speed);
 

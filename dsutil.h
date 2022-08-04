@@ -12,7 +12,7 @@
 #include <mmsystem.h>
 #include <mmreg.h>
 #include <dsound.h>
-
+#include "Core\DXUT.h"
 
 
 

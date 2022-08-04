@@ -4,6 +4,7 @@
 #include <string>
 #include <windows.h>
 #include <mmsystem.h>
+#include <tchar.h>
 
 class mp3Player
 {

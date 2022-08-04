@@ -41,7 +41,7 @@ bool cubeEnviroment::loadMeshIntoBuffer(char sysPath[],
 
     // D3DXLoadMeshFromX
     // Load the mesh from the specified file
-	if( FAILED( D3DXLoadMeshFromX( sysPath, 
+	if( FAILED( D3DXLoadMeshFromX((LPCWSTR)sysPath,
 									D3DXMESH_MANAGED, 
                                     localDevice,
 									&adjBuffer,
@@ -50,7 +50,7 @@ bool cubeEnviroment::loadMeshIntoBuffer(char sysPath[],
 									&numMtrls, 
                                     &pMesh ) ) )
     {
-		MessageBox(NULL, "Could not find Mesh", "Meshes.exe", MB_OK);
+		MessageBox(NULL, _T("Could not find Mesh"), _T("Meshes.exe"), MB_OK);
         result = false;
     }
 
@@ -79,12 +79,12 @@ bool cubeEnviroment::loadMeshIntoBuffer(char sysPath[],
 	IDirect3DTexture9* right = 0;
 	IDirect3DTexture9* left = 0;
 
-	D3DXCreateTextureFromFile(localDevice,backPath,&back);
-	D3DXCreateTextureFromFile(localDevice,frontPath,&front);
-	D3DXCreateTextureFromFile(localDevice,leftPath,&left);
-	D3DXCreateTextureFromFile(localDevice,rightPath,&right);
-	D3DXCreateTextureFromFile(localDevice,topPath,&top);
-	D3DXCreateTextureFromFile(localDevice,bottomPath,&bottom);
+	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)backPath,&back);
+	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)frontPath,&front);
+	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)leftPath,&left);
+	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)rightPath,&right);
+	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)topPath,&top);
+	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)bottomPath,&bottom);
 	
 	Textures.push_back(front);
 	Textures.push_back(back);

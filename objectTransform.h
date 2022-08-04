@@ -54,7 +54,7 @@ public:
 	void yaw(float angle); // rotate on up vector
 	void roll(float angle); // rotate on look vector
 	void getMatrix(D3DXMATRIX* V);
-	void addObjectSound(LPSTR wavFileName, HWND handle,CSoundManager* sound3Dmanager);
+	void addObjectSound(LPTSTR wavFileName, HWND handle,CSoundManager* sound3Dmanager);
 	void playSound(int soundNumber,D3DXVECTOR3 listenerPosition);
 	void drawMesh();
 	void drawMesh(int index);

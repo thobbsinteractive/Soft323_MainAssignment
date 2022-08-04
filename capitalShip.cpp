@@ -79,8 +79,8 @@ void CapitalShip::launchFighter(IDirect3DDevice9* _pDevice,std::vector<CapitalSh
 	}
 
 	
-	temp->addObjectSound("sound/engine.wav",localHandle,sound3Dmanager);
-	temp->addObjectSound("sound/fire.wav",localHandle,sound3Dmanager);
+	temp->addObjectSound(_T("sound/engine.wav"),localHandle,sound3Dmanager);
+	temp->addObjectSound(_T("sound/fire.wav"),localHandle,sound3Dmanager);
 
 	if(_pPos)
 	{
