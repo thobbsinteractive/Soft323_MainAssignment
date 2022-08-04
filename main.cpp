@@ -40,7 +40,7 @@ void getConfigSettings()
 	userSettings.width = 1024;
 	userSettings.height = 768;
 	userSettings.music = true;
-	userSettings.fullScreen = false;
+	userSettings.windowed = true;
 	userSettings.meshDetail = 2;
 
 
@@ -61,8 +61,8 @@ void getConfigSettings()
 
 	switch(SendMessage(m_hCbFullScreen,CB_GETCURSEL,0,0))
 	{
-		case 0: userSettings.fullScreen = false; break;
-		case 1: userSettings.fullScreen = true; break;
+		case 0: userSettings.windowed = false; break;
+		case 1: userSettings.windowed = true; break;
 	}
 
 	switch(SendMessage(m_hCbMeshDetail,CB_GETCURSEL,0,0))
@@ -260,7 +260,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	if(setupConfigWindow(hInstance,&mainWindowHandle,640,480) == false)
 	{
-		MessageBox(NULL, _T("Could Not initialise setup Window"), _T("FinalAssignment.exe"), MB_OK);
+		MessageBox(NULL, L"Could Not initialise setup Window", L"FinalAssignment.exe", MB_OK);
 	}
 
 	MSG msg;
@@ -281,12 +281,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 		if(setupApplicationWindow(hInstance,&mainWindowHandle,userSettings.width,userSettings.height) == false)
 		{
-			MessageBox(NULL, _T("Could Not initialise application Window"), _T("FinalAssignment.exe"), MB_OK);
+			MessageBox(NULL, L"Could Not initialise application Window", L"FinalAssignment.exe", MB_OK);
 		}
 
 		if (!myGame->run(userSettings, hInstance,&mainWindowHandle,userSettings.width,userSettings.height))
 		{
-			::MessageBox(0, _T("InitD3D() - FAILED"),0,0);
+			::MessageBox(0, L"InitD3D() - FAILED",0,0);
 		}
 
 		// Clean Up

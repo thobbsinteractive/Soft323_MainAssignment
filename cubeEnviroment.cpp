@@ -79,12 +79,12 @@ bool cubeEnviroment::loadMeshIntoBuffer(char sysPath[],
 	IDirect3DTexture9* right = 0;
 	IDirect3DTexture9* left = 0;
 
-	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)backPath,&back);
-	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)frontPath,&front);
-	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)leftPath,&left);
-	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)rightPath,&right);
-	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)topPath,&top);
-	D3DXCreateTextureFromFile(localDevice, (LPCWSTR)bottomPath,&bottom);
+	D3DXCreateTextureFromFileA(localDevice, backPath,&back);
+	D3DXCreateTextureFromFileA(localDevice, frontPath,&front);
+	D3DXCreateTextureFromFileA(localDevice, leftPath,&left);
+	D3DXCreateTextureFromFileA(localDevice, rightPath,&right);
+	D3DXCreateTextureFromFileA(localDevice, topPath,&top);
+	D3DXCreateTextureFromFileA(localDevice, bottomPath,&bottom);
 	
 	Textures.push_back(front);
 	Textures.push_back(back);

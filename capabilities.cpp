@@ -60,7 +60,7 @@ bool Capabilities::getCapabilities(int* width, // [out] A pointer to the set scr
 	//temp
 
 	D3DFORMAT depth = D3DFMT_D24S8;
-	bool windowed = userSettings.fullScreen;
+	bool windowed = userSettings.windowed;
 	D3DDEVTYPE deviceType = D3DDEVTYPE_HAL;
 
 	return initDevice(d3d9,hwnd,windowed,depth,*width,*height,vp,deviceType,device);

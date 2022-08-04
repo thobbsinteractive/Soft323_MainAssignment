@@ -95,7 +95,7 @@ void billboardSprite::setupSprite(IDirect3DDevice9* device,float _sizeX, float _
 	// save the loaded texture
 	if(texturePath)
 	{
-		D3DXCreateTextureFromFile(localDevice,(LPCWSTR)texturePath,&texture);
+		D3DXCreateTextureFromFileA(localDevice, texturePath,&texture);
 	}
 }
 

@@ -6,7 +6,7 @@ struct GameSettings
 {
 	int width;
 	int height;
-	bool fullScreen;
+	bool windowed;
 	bool music;
 	int meshDetail;
 };
