@@ -16,7 +16,7 @@ void mp3Player::load(char _fileName[])
 	fileName = _fileName;
 
 	std::string szCommand = "open \"" + fileName + "\" type mpegvideo alias " + fileName;
-	mciSendString((LPCWSTR)szCommand.c_str(), NULL, 0, 0);
+	mciSendStringA(szCommand.c_str(), NULL, 0, 0);
 
 	//Parameter Description
 	//'open' 	     - Inform MCI we'd like to load the resource in 'szFileName'
@@ -34,13 +34,13 @@ void mp3Player::unLoad()
 	}
 
 	std::string szCommand = "close " + fileName;
-	mciSendString((LPCWSTR)szCommand.c_str(), NULL, 0, 0);
+	mciSendStringA(szCommand.c_str(), NULL, 0, 0);
 }
 
 void mp3Player::play()
 {
 	std::string szCommand = "play " + fileName + " from 0";
-	mciSendString((LPCWSTR)szCommand.c_str(), NULL, 0, 0);
+	mciSendStringA(szCommand.c_str(), NULL, 0, 0);
 	playing = true;
 }
 
@@ -51,20 +51,20 @@ bool mp3Player::isPlaying()
 void mp3Player::pause()
 {
 	std::string szCommand = "pause " + fileName;
-	mciSendString((LPCWSTR)szCommand.c_str(), NULL, 0, 0);
+	mciSendStringA(szCommand.c_str(), NULL, 0, 0);
 	playing = false;
 }
 
 void mp3Player::unPause()
 {
 	std::string szCommand = "resume " + fileName;
-	mciSendString((LPCWSTR)szCommand.c_str(), NULL, 0, 0);
+	mciSendStringA(szCommand.c_str(), NULL, 0, 0);
 	playing = true;
 }
 
 void mp3Player::stop()
 {
 	std::string szCommand = "stop " + fileName;
-	mciSendString((LPCWSTR)szCommand.c_str(), NULL, 0, 0);
+	mciSendStringA(szCommand.c_str(), NULL, 0, 0);
 	playing = false;
 }
