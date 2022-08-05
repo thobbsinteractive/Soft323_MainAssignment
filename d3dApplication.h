@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <strsafe.h>
+#include <chrono>
 //#include <dinput.h>
 
 #include "viewObject.h"

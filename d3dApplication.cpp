@@ -393,7 +393,7 @@ int d3dApplication::EnterMsgLoop( bool (d3dApplication::*ptr_displayFunction)(fl
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
 
-	static float lastTime = (float)timeGetTime(); 
+	static std::chrono::system_clock::time_point lastTime = std::chrono::system_clock::now();
 
 	while((msg.message != WM_QUIT)&&(gameRunning == true))
 	{
@@ -404,11 +404,20 @@ int d3dApplication::EnterMsgLoop( bool (d3dApplication::*ptr_displayFunction)(fl
 		}
 		else
         {	
-			float currTime  = (float)timeGetTime();
-			float timeDelta = (currTime - lastTime)*0.001f;
+			std::chrono::system_clock::time_point currTime = std::chrono::system_clock::now();
+
+			std::chrono::duration<double, std::milli> timeDelta = (currTime - lastTime)*0.001f;
 
 			// Run the selected render detail function
-			(this->*ptr_displayFunction)(timeDelta);
+			(this->*ptr_displayFunction)(timeDelta.count());
+
+			std::chrono::duration<double, std::milli> renderTimeMS = currTime - std::chrono::system_clock::now();
+
+			//lock to 60 fps
+			if (renderTimeMS.count() < 16.0f)
+			{
+				Sleep(16.0f - renderTimeMS.count());
+			}
 
 			lastTime = currTime;	
         }
