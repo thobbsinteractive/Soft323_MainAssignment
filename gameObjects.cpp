@@ -516,109 +516,10 @@ void GameObjects::drawRadarObjects()
 
 		D3DXMatrixTranslation(&shipPositionMatrix, shipPosition.x,shipPosition.y,shipPosition.z);
 		currentPositionMatrix = shipPositionMatrix * radarMatrix;
-/*
-		if(shipPosition.x == aiShipPos.x)
-		{
-			aiShipPos.x = shipPosition.x;
-		}
-
-		if((shipPosition.x > aiShipPos.x)&&(aiShipPos.x >= 0.0f)&&(shipPosition.x >= 0.0f))
-		{
-			aiShipPos.x = shipPosition.x - aiShipPos.x;
-		}
-
-		if((shipPosition.x < aiShipPos.x)&&(aiShipPos.x >= 0.0f)&&(shipPosition.x >= 0.0f))
-		{
-			aiShipPos.x = aiShipPos.x - shipPosition.x;
-		}
-
-		if((shipPosition.x > aiShipPos.x)&&(aiShipPos.x < 0.0f)&&(shipPosition.x >= 0.0f))
-		{
-			aiShipPos.x = -shipPosition.x + aiShipPos.x;
-		}
-
-		if((shipPosition.x < aiShipPos.x)&&(aiShipPos.x < 0.0f)&&(shipPosition.x < 0.0f))
-		{
-			aiShipPos.x = shipPosition.x + -aiShipPos.x;
-		}
-
-		///// Y ////////
-		if(shipPosition.y == aiShipPos.y)
-		{
-			aiShipPos.y = shipPosition.y;
-		}
-
-		if((shipPosition.y > aiShipPos.y)&&(aiShipPos.y >= 0.0f)&&(shipPosition.y >= 0.0f))
-		{
-			aiShipPos.y = shipPosition.y - aiShipPos.y;
-		}
-
-		if((shipPosition.y < aiShipPos.y)&&(aiShipPos.y >= 0.0f)&&(shipPosition.y >= 0.0f))
-		{
-			aiShipPos.y = aiShipPos.y - shipPosition.y;
-		}
-
-		if((shipPosition.y > aiShipPos.y)&&(aiShipPos.y < 0.0f)&&(shipPosition.y >= 0.0f))
-		{
-			aiShipPos.y = -shipPosition.y + aiShipPos.y;
-		}
-
-		if((shipPosition.y < aiShipPos.y)&&(aiShipPos.y < 0.0f)&&(shipPosition.y < 0.0f))
-		{
-			aiShipPos.y = shipPosition.y + -aiShipPos.y;
-		}
-*/
-		///// z /////////
-		/*
-		if(shipPosition.z == aiShipPos.z)
-		{
-			aiShipPos.z = shipPosition.z;
-		}
-
-		///////2
-		if((shipPosition.z > aiShipPos.z)&&(aiShipPos.z >= 0.0f)&&(shipPosition.z >= 0.0f))
-		{
-			//float difference = aiShipPos.z - shipPosition.z;
-			aiShipPos.z =  aiShipPos.z+(shipPosition.z - aiShipPos.z);
-		}
-
-		//////////// works
-		if((shipPosition.z < aiShipPos.z)&&(aiShipPos.z >= 0.0f)&&(shipPosition.z >= 0.0f))
-		{
-			aiShipPos.z = aiShipPos.z - shipPosition.z;
-		}
-
-		if((shipPosition.z > aiShipPos.z)&&(aiShipPos.z < 0.0f)&&(shipPosition.z >= 0.0f))
-		{
-			aiShipPos.z = -shipPosition.z + aiShipPos.z;
-		}
-
-		///// 3 // works
-		if((shipPosition.z < aiShipPos.z)&&(aiShipPos.z > 0.0f)&&(shipPosition.z < 0.0f))
-		{
-			aiShipPos.z = shipPosition.z-(aiShipPos.z - shipPosition.z);
-		}
-
-		/// 4 ///
-		if((shipPosition.z > aiShipPos.z)&&(aiShipPos.z < 0.0f)&&(shipPosition.z < 0.0f))
-		{
-			aiShipPos.z = -shipPosition.z + aiShipPos.z;
-		}
-
-		// Seems to work
-		if((shipPosition.z < aiShipPos.z)&&(aiShipPos.z < 0.0f)&&(shipPosition.z < 0.0f))
-		{
-			aiShipPos.z = -shipPosition.z + aiShipPos.z;
-		}*/
-
-
 
 		D3DXMatrixTranslation(&aiPosMatrix, aiShipPos.x,0.0f,aiShipPos.z);
 		aiPosMatrix = aiPosMatrix * scaling;
 
-		//shipPositionMatrix = (aiPosMatrix + shipPositionMatrix) * currentPositionMatrix;
-		
-		//shipPositionMatrix = aiPosMatrix * currentPositionMatrix;
 		shipPositionMatrix = aiPosMatrix * currentPositionMatrix;
 		pLocalDevice->SetTransform(D3DTS_WORLD, &shipPositionMatrix);
 		sphereMesh->DrawSubset(0); // Draw as sphere

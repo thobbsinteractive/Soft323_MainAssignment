@@ -47,10 +47,9 @@ void getConfigSettings()
 	switch(SendMessage(m_hCbResolution,CB_GETCURSEL,0,0))
 	{
 		case 0: userSettings.width = 1024; userSettings.height = 768; break;
-		case 1: userSettings.width = 1152; userSettings.height = 864; break;
-		case 2: userSettings.width = 1280; userSettings.height = 960; break;
-		case 3: userSettings.width = 1280; userSettings.height = 1024; break;
-		case 4: userSettings.width = 1600; userSettings.height = 1200; break;
+		case 1: userSettings.width = 1280; userSettings.height = 1024; break;
+		case 2: userSettings.width = 1600; userSettings.height = 1200; break;
+		case 3: userSettings.width = 1920; userSettings.height = 1080; break;
 	}
 
 	switch(SendMessage(m_hCbMusic,CB_GETCURSEL,0,0))
@@ -176,14 +175,13 @@ bool setupConfigWindow(HINSTANCE hInstance,HWND* ptrMainWindowHandle,int width, 
 	m_hBtnStart = CreateWindowA("button", "Start",WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | WS_TABSTOP,65,250,80,24,*ptrMainWindowHandle,(HMENU)ID_START,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
 	m_hBtnCancel = CreateWindowA("button", "Cancel",WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | WS_TABSTOP,175,250,80,24,*ptrMainWindowHandle,(HMENU)ID_CANCEL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
 
-	m_hLblGameSettings = CreateWindowA("static", "Default settings are: 1042,music on, fullscreen on, Mesh detail high",WS_CHILD | WS_VISIBLE | SS_LEFT,20,280,500,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
+	m_hLblGameSettings = CreateWindowA("static", "Default settings are: 1024, music on, fullscreen on, Mesh detail high",WS_CHILD | WS_VISIBLE | SS_LEFT,20,280,500,18,*ptrMainWindowHandle,NULL,(HINSTANCE)GetWindowLong(*ptrMainWindowHandle,GWL_HINSTANCE),NULL);
 
 	//fill combo boxes
 	SendMessageA(m_hCbResolution,CB_ADDSTRING,0,(long)"1024 x 768");
-	SendMessageA(m_hCbResolution,CB_ADDSTRING,0,(long)"1152 x 864");
-	SendMessageA(m_hCbResolution,CB_ADDSTRING,0,(long)"1280 x 960");
 	SendMessageA(m_hCbResolution,CB_ADDSTRING,0,(long)"1280 x 1024");
 	SendMessageA(m_hCbResolution,CB_ADDSTRING,0,(long)"1600 x 1200");
+	SendMessageA(m_hCbResolution,CB_ADDSTRING,0,(long)"1920 x 1080");
 
 	SendMessageA(m_hCbMusic,CB_ADDSTRING,0,(long)"ON");
 	SendMessageA(m_hCbMusic,CB_ADDSTRING,0,(long)"OFF");

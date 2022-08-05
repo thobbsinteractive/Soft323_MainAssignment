@@ -83,9 +83,20 @@ void PlayerShip::displayTargetStatus()
 {
 	float x;
 	float y;
+	float aspectRatio =  (float)width / (float)height;
 
-	RECT rect = {(width/100)*16, (height/60)*57, width, height};
-	RECT rect2 = {(width/100)*73, (height/60)*59, width, height};
+	RECT rectTextTarget = {(width / 100) * 16, (height / 60) * 57, width, height};
+	if (aspectRatio == 1.77777779f)
+	{
+		rectTextTarget = {(long)(((float)width / 100) * 24), (long)(((float)height / 100) * 91), width, height};
+	}
+
+	RECT rectShipStatus = {(width/100)*73, (height/60)*59, width, height};
+	if (aspectRatio == 1.77777779f)
+	{
+		rectShipStatus = { (long)(((float)width / 100) * 66), (long)(((float)height / 100) * 92), width, height };
+	}
+
 	RECT hud = {0, (height/2)-(height/10), width, height};
 	RECT objectivesListing = {(width/100)*50, (height/60)*1, width, height};
 
@@ -164,8 +175,8 @@ void PlayerShip::displayTargetStatus()
 
 		hudValues[49] = '\0'; // mark end of string
 
-		font->DrawTextA(NULL, aiTextFinal.c_str(), -1,&rect,DT_TOP | DT_LEFT, 0xffffffff);
-		font->DrawTextA(NULL, hudValues, -1,&hud,DT_CENTER | DT_LEFT, 0xffffffff);
+		font->DrawTextA(NULL, aiTextFinal.c_str(), -1, &rectTextTarget, DT_TOP | DT_LEFT, 0xffffffff);
+		font->DrawTextA(NULL, hudValues, -1, &hud, DT_CENTER | DT_LEFT, 0xffffffff);
 	}
 
 	sprintf(playerValues, "Hull:%.0f\nSpeed:%.2f",
@@ -175,7 +186,7 @@ void PlayerShip::displayTargetStatus()
 	playerValues[49] = '\0'; // mark end of string
 
 	//Draw AI ship details
-	font->DrawTextA(NULL, playerValues, -1,&rect2,DT_TOP | DT_LEFT, 0xffffffff);
+	font->DrawTextA(NULL, playerValues, -1, &rectShipStatus, DT_TOP | DT_LEFT, 0xffffffff);
 	font->DrawTextA(NULL, objectivesList.c_str(), -1,&objectivesListing,DT_TOP | DT_CENTER, 0xffffffff);
 
 	targetedShip = NULL; // Clear every frame so as to keep the HUD upto date
