@@ -143,6 +143,7 @@
     <ClCompile Include="d3dApplication.cpp" />
     <ClCompile Include="d3dfont.cpp" />
     <ClCompile Include="dsutil.cpp" />
+    <ClCompile Include="dxutil.cpp" />
     <ClCompile Include="explosion.cpp" />
     <ClCompile Include="fire.cpp" />
     <ClCompile Include="gameInput.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="d3dApplication.h" />
     <ClInclude Include="d3dfont.h" />
     <ClInclude Include="dsutil.h" />
+    <ClInclude Include="dxutil.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="explosion.h" />
     <ClInclude Include="fire.h" />

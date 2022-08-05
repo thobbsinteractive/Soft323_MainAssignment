@@ -120,6 +120,9 @@
     <ClCompile Include="dsutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dxutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3DSound.h">
@@ -240,6 +243,9 @@
       <Filter>DXUT\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dsutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
