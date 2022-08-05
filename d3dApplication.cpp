@@ -477,8 +477,8 @@ bool d3dApplication::renderLowDetail(float timeDelta)
 			//Draw FPS
 			if( Font )
 			{
-				Font->DrawText(20, 20, 0xffffffff, (LPCWSTR)FPSString);
-				Font->DrawText(20, 50, 0xffffffff, (LPCWSTR)Values);
+				Font->DrawText(20, 20, 0xffffffff, FPSString);
+				Font->DrawText(20, 50, 0xffffffff, Values);
 			};
 
 			//playerShip.updateAllsounds();
