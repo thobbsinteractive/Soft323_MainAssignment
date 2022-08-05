@@ -411,10 +411,10 @@ int d3dApplication::EnterMsgLoop( bool (d3dApplication::*ptr_displayFunction)(fl
 			// Run the selected render detail function
 			(this->*ptr_displayFunction)(timeDelta.count());
 
-			std::chrono::duration<double, std::milli> renderTimeMS = currTime - std::chrono::system_clock::now();
+			std::chrono::duration<double, std::milli> renderTimeMS = std::chrono::system_clock::now() - currTime;
 
 			//lock to 60 fps
-			if (renderTimeMS.count() < 16.0f)
+			if (renderTimeMS.count() > 0 && renderTimeMS.count() < 16.0f)
 			{
 				Sleep(16.0f - renderTimeMS.count());
 			}
