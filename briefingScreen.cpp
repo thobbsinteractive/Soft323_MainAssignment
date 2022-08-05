@@ -62,7 +62,13 @@ void BriefingScreen::setText(std::string newText)
 
 void BriefingScreen::displayScreen()
 {
-	RECT rect = {(width/100)*22, (height/100)*28, (width/100*90),height};
+	float aspectRatio = (float)width / (float)height;
+
+	RECT rect = { (width / 100) * 22, (height / 100) * 28, (width / 100 * 90),height };
+	if (aspectRatio == 1.77777779f)
+	{
+		rect = { (long)(((float)width / 100) * 30), (long)(((float)height / 100) * 30), (long)(((float)width / 100) * 70), height };
+	}
 
 	D3DXMATRIX RotationMatrix;
 	D3DXMATRIX Translation;

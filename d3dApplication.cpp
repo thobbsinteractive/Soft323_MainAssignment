@@ -490,7 +490,7 @@ bool d3dApplication::renderLowDetail(float timeDelta)
 			setScreenRenderStates();
 			i = 0;
 
-			d3dDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0xffffffff, 1.0f, 0L);
+			d3dDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0xff000000, 1.0f, 0L);
 			d3dDevice->BeginScene();
 
 			d3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
