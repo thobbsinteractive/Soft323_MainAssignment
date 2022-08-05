@@ -27,7 +27,6 @@ public:
 	void RenderShadowGeometry();
 	void AddEdge(WORD* pEdges, DWORD& dwNumEdges, WORD v0, WORD v1);
 	void drawRadarObjects();
-	void drawObjects(int index);
 	void drawSprites(float timeDelta);
 	void drawSprite(int index);
 	void getShip(int index,CapitalShip** selectedShip);

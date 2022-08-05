@@ -1356,35 +1356,29 @@ void GameObjects::drawObjects()
 			{
 				pShipList[i]->drawMesh(0);
 			}
+
+			//Set to true to display bounding spheres
+			if (false)
+			{
+				//
+				// Draw bounding volume in blue and at 10% opacity
+				D3DMATERIAL9 blue;
+				blue.Ambient = BLUE;
+				blue.Diffuse = BLUE;
+				blue.Specular = BLUE;
+				blue.Emissive = BLACK;
+				blue.Power = 0.2f;
+
+				blue.Diffuse.a = 0.10f; // 10% opacity
+
+				pLocalDevice->SetMaterial(&blue);
+				pLocalDevice->SetTexture(0, 0); // disable texture
+
+				pShipList[i]->drawMeshBounding();
+			}
 		}
 	}
 	//pLocalDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
-}
-
-// Draws a selected object
-void GameObjects::drawObjects(int index)
-{
-
-	pShipList[index]->drawMesh();
-
-	if(pShipList[index]->getTargeted() == true)
-	{
-		//
-		// Draw bounding volume in blue and at 10% opacity
-		D3DMATERIAL9 blue;
-		blue.Ambient  = BLUE;
-		blue.Diffuse  = BLUE;
-		blue.Specular = BLUE;
-		blue.Emissive = BLACK;
-		blue.Power    = 0.2f;
-
-		blue.Diffuse.a = 0.10f; // 10% opacity
-
-		pLocalDevice->SetMaterial(&blue);
-		pLocalDevice->SetTexture(0, 0); // disable texture
-
-		pShipList[index]->drawMeshBounding();
-	}
 }
 
 // Add an object to the vector of objects
